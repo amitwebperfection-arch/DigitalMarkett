@@ -1,0 +1,277 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gradient-to-br from-slate-50 via-white to-slate-100 text-slate-900;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+      monospace;
+  }
+
+  * {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-gradient-to-r from-slate-900 to-slate-800 text-white px-6 py-3 rounded-xl hover:shadow-2xl hover:shadow-slate-900/30 transition-all duration-300 font-bold;
+  }
+
+  .btn-secondary {
+    @apply bg-gradient-to-r from-slate-100 to-slate-200 text-slate-900 px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-300 font-semibold;
+  }
+
+  .btn-outline {
+    @apply border-2 border-slate-900 text-slate-900 px-6 py-3 rounded-xl hover:bg-slate-900 hover:text-white transition-all duration-300 font-bold;
+  }
+
+  .input {
+    @apply w-full px-5 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-slate-900/10 focus:border-slate-900 transition-all duration-200 bg-white;
+  }
+
+  .card {
+    @apply bg-white rounded-2xl shadow-lg shadow-slate-200/50 p-8 border border-slate-200/60 hover:shadow-xl transition-shadow duration-300;
+  }
+
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+}
+
+/* Enhanced Loading Spinner */
+.spinner {
+  border: 4px solid rgba(15, 23, 42, 0.1);
+  border-left-color: #0f172a;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Custom Scrollbar for Gallery */
+.scrollbar-custom::-webkit-scrollbar {
+  height: 6px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 100px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 100px;
+  transition: background 0.2s;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Main Page Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #64748b, #475569);
+  border-radius: 100px;
+  border: 2px solid #f8fafc;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #475569, #334155);
+}
+
+/* Pulse Animation for Sale Badge */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Fade In Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* Hover Glow Effect for Cards */
+.card-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-glow::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(15, 23, 42, 0.05) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.5s;
+  pointer-events: none;
+}
+
+.card-glow:hover::before {
+  opacity: 1;
+}
+
+/* Border Animation */
+@keyframes borderRotate {
+  0% {
+    border-image-source: linear-gradient(0deg, #0f172a, #64748b);
+  }
+  50% {
+    border-image-source: linear-gradient(180deg, #0f172a, #64748b);
+  }
+  100% {
+    border-image-source: linear-gradient(360deg, #0f172a, #64748b);
+  }
+}
+
+/* Prose Styling Override */
+.prose {
+  @apply text-slate-600;
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4 {
+  @apply text-slate-900 font-bold;
+}
+
+.prose a {
+  @apply text-slate-900 font-semibold hover:text-slate-700 transition-colors;
+}
+
+.prose strong {
+  @apply text-slate-900 font-bold;
+}
+
+/* Image Zoom Effect */
+.image-zoom {
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.image-zoom:hover {
+  transform: scale(1.05);
+}
+
+/* Gradient Text */
+.gradient-text {
+  background: linear-gradient(135deg, #0f172a 0%, #475569 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Shadow Variations */
+.shadow-custom-sm {
+  box-shadow: 0 2px 8px -1px rgba(15, 23, 42, 0.1),
+              0 2px 4px -2px rgba(15, 23, 42, 0.06);
+}
+
+.shadow-custom-md {
+  box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.12),
+              0 2px 6px -3px rgba(15, 23, 42, 0.08);
+}
+
+.shadow-custom-lg {
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.15),
+              0 4px 10px -6px rgba(15, 23, 42, 0.1);
+}
+
+.shadow-custom-xl {
+  box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.2),
+              0 8px 16px -8px rgba(15, 23, 42, 0.12);
+}
+
+/* Button Hover Effects */
+.btn-hover-scale {
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-hover-scale:hover {
+  transform: translateY(-2px);
+}
+
+.btn-hover-scale:active {
+  transform: translateY(0);
+}
+
+/* Glass Effect */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Shimmer Loading Effect */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.shimmer {
+  animation: shimmer 2s infinite linear;
+  background: linear-gradient(to right, #f1f5f9 4%, #e2e8f0 25%, #f1f5f9 36%);
+  background-size: 1000px 100%;
+}
+
+/* Focus States */
+*:focus-visible {
+  outline: 3px solid rgba(15, 23, 42, 0.5);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid rgba(15, 23, 42, 0.5);
+  outline-offset: 4px;
+}

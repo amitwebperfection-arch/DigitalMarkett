@@ -1,0 +1,305 @@
+import * as productService from './service.js';
+import { uploadToCloudinary } from '../../config/s3.js';
+import Product from './model.js';
+
+export const createProduct = async (req, res, next) => {
+  try {
+    console.log('📁 Files received:', req.files);
+    console.log('📝 Body data:', req.body);
+
+    const uploadedData = {
+      thumbnail: null,
+      images: [],
+      files: []
+    };
+
+    // ========== Upload Thumbnail ==========
+    if (req.files?.thumbnail?.[0]) {
+      console.log('☁️ Uploading thumbnail...');
+      const result = await uploadToCloudinary(
+        req.files.thumbnail[0], 
+        'products/thumbnails'
+      );
+      uploadedData.thumbnail = result.secure_url;
+      console.log('✅ Thumbnail uploaded:', uploadedData.thumbnail);
+    }
+
+    // ========== Upload Additional Images ==========
+    if (req.files?.images?.length > 0) {
+      console.log('☁️ Uploading additional images...');
+      const imagePromises = req.files.images.map(file => 
+        uploadToCloudinary(file, 'products/gallery')
+      );
+      const imageResults = await Promise.all(imagePromises);
+      uploadedData.images = imageResults.map(result => ({
+        url: result.secure_url,
+        alt: req.body.title || 'Product image'
+      }));
+      console.log(`✅ ${uploadedData.images.length} images uploaded`);
+    }
+
+    // ========== Upload Product Files ==========
+    if (req.files?.files?.length > 0) {
+      console.log('☁️ Uploading product files...');
+      const filePromises = req.files.files.map(file => 
+        uploadToCloudinary(file, 'products/files')
+      );
+      const fileResults = await Promise.all(filePromises);
+      uploadedData.files = fileResults.map((result, index) => ({
+        name: req.files.files[index].originalname,
+        url: result.secure_url,
+        size: req.files.files[index].size,
+        type: req.files.files[index].mimetype
+      }));
+      console.log(`✅ ${uploadedData.files.length} files uploaded`);
+    }
+
+    // ========== Parse Changelog ==========
+    let changelog = [];
+    if (req.body.changelog) {
+      try {
+        changelog = JSON.parse(req.body.changelog);
+      } catch (e) {
+        console.error('Failed to parse changelog:', e);
+      }
+    }
+
+    // ========== Prepare Product Data ==========
+    const productData = {
+      ...req.body,
+      thumbnail: uploadedData.thumbnail,
+      images: uploadedData.images,
+      files: uploadedData.files,
+      changelog
+    };
+
+    // Create product
+    const product = await productService.createProduct(productData, req.user.id);
+    
+    console.log('✅ Product created:', product._id);
+
+    res.status(201).json({ 
+      success: true, 
+      product 
+    });
+  } catch (error) {
+    console.error('❌ Error creating product:', error);
+    next(error);
+  }
+};
+
+// export const getProducts = async (req, res, next) => {
+//   try {
+//     const { page = 1, limit = 12, ...filters } = req.query;
+//     const result = await productService.getProducts(filters, Number(page), Number(limit));
+//     res.json({ success: true, ...result });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
+export const getRelatedProducts = async (req, res, next) => {
+  try {
+    const { category } = req.query;
+    const products = await productService.getRelatedProducts(category, 4);
+    res.json({ success: true, products });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getProductBySlug = async (req, res, next) => {
+  try {
+    const product = await productService.getProductBySlug(req.params.slug);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    res.json({ success: true, product });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateProduct = async (req, res, next) => {
+  try {
+    console.log('📁 Update - Files received:', req.files);
+    console.log('📝 Update - Body data:', req.body);
+
+    const uploadedData = {};
+
+    // Upload new thumbnail if provided
+    if (req.files?.thumbnail?.[0]) {
+      console.log('☁️ Uploading new thumbnail...');
+      const result = await uploadToCloudinary(
+        req.files.thumbnail[0], 
+        'products/thumbnails'
+      );
+      uploadedData.thumbnail = result.secure_url;
+      console.log('✅ New thumbnail uploaded');
+    }
+
+    // Upload additional images if provided
+    if (req.files?.images?.length > 0) {
+      console.log('☁️ Uploading additional images...');
+      const imagePromises = req.files.images.map(file => 
+        uploadToCloudinary(file, 'products/gallery')
+      );
+      const imageResults = await Promise.all(imagePromises);
+      uploadedData.images = imageResults.map(result => ({
+        url: result.secure_url,
+        alt: req.body.title || 'Product image'
+      }));
+      console.log(`✅ ${uploadedData.images.length} new images uploaded`);
+    }
+
+    // Upload new files if provided
+    if (req.files?.files?.length > 0) {
+      console.log('☁️ Uploading new product files...');
+      const filePromises = req.files.files.map(file => 
+        uploadToCloudinary(file, 'products/files')
+      );
+      const fileResults = await Promise.all(filePromises);
+      uploadedData.files = fileResults.map((result, index) => ({
+        name: req.files.files[index].originalname,
+        url: result.secure_url,
+        size: req.files.files[index].size,
+        type: req.files.files[index].mimetype
+      }));
+      console.log(`✅ ${uploadedData.files.length} new files uploaded`);
+    }
+
+    // Parse changelog if provided
+    if (req.body.changelog) {
+      try {
+        uploadedData.changelog = JSON.parse(req.body.changelog);
+      } catch (e) {
+        console.error('Failed to parse changelog:', e);
+      }
+    }
+
+    // Merge uploaded data with request body
+    const updates = {
+      ...req.body,
+      ...uploadedData
+    };
+
+    const product = await productService.updateProduct(
+      req.params.id, 
+      req.user.id, 
+      updates
+    );
+    
+    res.json({ success: true, product });
+  } catch (error) {
+    console.error('❌ Error updating product:', error);
+    next(error);
+  }
+};
+
+export const deleteProduct = async (req, res, next) => {
+  try {
+    await productService.deleteProduct(req.params.id, req.user.id);
+    res.json({ success: true, message: 'Product deleted' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const approveProduct = async (req, res, next) => {
+  try {
+    const product = await productService.approveProduct(req.params.id);
+    res.json({ success: true, product });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const rejectProduct = async (req, res, next) => {
+  try {
+    const product = await productService.rejectProduct(req.params.id);
+    res.json({ success: true, product });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getVendorProduct = async (req, res) => {
+  const product = await productService.getVendorProductById(
+    req.params.id,
+    req.user.id
+  );
+  res.json({ success: true, product });
+};
+
+// ✅ FIXED: Now toggles published field correctly
+export const togglePublished = async (req, res, next) => {
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Vendor can toggle only own product
+    if (
+      req.user.role === 'vendor' &&
+      product.vendor.toString() !== req.user._id.toString()
+    ) {
+      return res.status(403).json({ message: 'Not allowed' });
+    }
+
+    // ✅ Toggle published field (not status)
+    product.published = !product.published;
+
+    await product.save();
+
+    res.json({
+      success: true,
+      product,
+      published: product.published,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getVendorProducts = async (req, res, next) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+
+    const skip = (page - 1) * limit;
+
+    const query = { vendor: req.user._id }; // 🔥 MAIN FILTER - Only vendor's products
+
+    const products = await Product.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(Number(limit));
+
+    const total = await Product.countDocuments(query);
+
+    res.json({
+      success: true,
+      products,
+      pages: Math.ceil(total / limit),
+      total
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ✅ ADD NEW ENDPOINT: Get all products (public page)
+export const getProducts = async (req, res, next) => {
+  try {
+    const { page = 1, limit = 12, ...filters } = req.query;
+    
+    // ✅ IMPORTANT: Don't pass vendor filter for public pages
+    // This will trigger the default filters in service (approved + published)
+    const result = await productService.getProducts(filters, Number(page), Number(limit));
+    
+    res.json({ success: true, ...result });
+  } catch (error) {
+    next(error);
+  }
+};

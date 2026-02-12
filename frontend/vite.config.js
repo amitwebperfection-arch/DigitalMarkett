@@ -13,7 +13,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: 'https://digitalmarket-h8tb.onrender.com',
         changeOrigin: true
       }
     }

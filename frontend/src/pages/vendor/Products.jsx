@@ -81,11 +81,49 @@ function VendorProducts() {
     },
   });
 
-  const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this product?')) {
-      deleteMutation.mutate(id);
+  // const handleDelete = (id) => {
+  //   if (window.confirm('Are you sure you want to delete this product?')) {
+  //     deleteMutation.mutate(id);
+  //   }
+  // };
+
+const handleDelete = (id) => {
+  toast(
+    (t) => (
+      <div className="bg-white p-6 rounded shadow-lg w-80 text-center">
+        <p className="mb-4 font-medium">Are you sure you want to delete this product?</p>
+        <div className="flex justify-center gap-4">
+          <button
+            onClick={() => {
+              deleteMutation.mutate(id);
+              toast.dismiss(t.id);
+            }}
+            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+          >
+            Yes
+          </button>
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    ),
+    {
+      duration: Infinity,
+      position: 'top-center', // start top-center
+      style: {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      className: 'toast-center', // optional, for additional CSS
     }
-  };
+  );
+};
+
 
   const columns = [
     {

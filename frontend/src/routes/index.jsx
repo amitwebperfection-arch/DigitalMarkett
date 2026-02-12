@@ -55,7 +55,7 @@ const VendorEarnings = lazy(() => import('../pages/vendor/Earnings'));
 const VendorPayouts = lazy(() => import('../pages/vendor/Payouts'));
 const VendorReviews = lazy(() => import('../pages/vendor/Reviews'));
 const VendorEditProduct = lazy(() => import('../pages/vendor/EditProduct'));
-const BankDetails = lazy(() => import('../pages/vendor/VendorBankDetails'));
+// const BankDetails = lazy(() => import('../pages/vendor/VendorBankDetails'));
 const VendorTicketDetailPage = lazy(() => import('../pages/vendor/TicketDetailPage'));
 const VendorTicketListPage = lazy(() => import('../pages/vendor/TicketListPage'));
 const VendorProfile = lazy(() => import('../pages/vendor/VendorProfile'));
@@ -149,7 +149,7 @@ function AppRoutes() {
           <Route path="earnings" element={<VendorEarnings />} />
           <Route path="payouts" element={<VendorPayouts />} />
           <Route path="reviews" element={<VendorReviews />} />
-          <Route path="bank-details" element={<BankDetails />} />
+          {/* <Route path="bank-details" element={<BankDetails />} /> */}
           <Route path="tickets" element={<VendorTicketListPage />} />
           <Route path="tickets/:id" element={<VendorTicketDetailPage />} />
           <Route path="profile" element={<VendorProfile />} />

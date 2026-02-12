@@ -159,7 +159,7 @@ const confirmPayout = () => {
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Payouts</h1>
           <button
-            onClick={() => navigate('/vendor/bank-details')}
+            onClick={() => navigate('/vendor/profile')}
             className="text-blue-600 hover:text-blue-700 text-sm font-medium"
           >
             Edit Bank Details →

@@ -59,45 +59,6 @@ export const createCategory = async (req, res, next) => {
   }
 };
 
-// Get all categories
-// export const getCategories = async (req, res, next) => {
-//   try {
-//     const { search, published, parent } = req.query;
-
-//     const query = {};
-
-    
-//     if (search) {
-//       query.$or = [
-//         { name: { $regex: search, $options: 'i' } },
-//         { description: { $regex: search, $options: 'i' } }
-//       ];
-//     }
-
-    
-//     if (published !== undefined) {
-//       query.published = published === 'true';
-//     }
-
-    
-//     if (parent === 'null' || parent === 'only') {
-//       query.parent = null;
-//     }
-
-//     const categories = await Category.find(query)
-//       .populate('parent', 'name')
-//       .sort({ order: 1, createdAt: -1 });
-
-//     res.json({ 
-//       success: true, 
-//       categories,
-//       total: categories.length
-//     });
-//   } catch (error) {
-//     console.error('❌ Error fetching categories:', error);
-//     next(error);
-//   }
-// };
 
 export const getCategories = async (req, res, next) => {
   try {
@@ -127,17 +88,40 @@ export const getCategories = async (req, res, next) => {
       // 1️⃣ Category filters
       { $match: matchStage },
 
-      // 2️⃣ Products join
+      // 2️⃣ Lookup parent category details
       {
         $lookup: {
-          from: 'products',          // 🔴 MongoDB collection name
-          localField: 'slug',         // category.slug
-          foreignField: 'category',   // product.category
+          from: 'categories',
+          localField: 'parent',
+          foreignField: '_id',
+          as: 'parentDetails'
+        }
+      },
+
+      // 3️⃣ Add parent info
+      {
+        $addFields: {
+          parentInfo: {
+            $cond: {
+              if: { $gt: [{ $size: '$parentDetails' }, 0] },
+              then: { $arrayElemAt: ['$parentDetails', 0] },
+              else: null
+            }
+          }
+        }
+      },
+
+      // 4️⃣ Products join
+      {
+        $lookup: {
+          from: 'products',
+          localField: 'slug',
+          foreignField: 'category',
           as: 'products'
         }
       },
 
-      // 3️⃣ Sirf published products ka count
+      // 5️⃣ Count published products
       {
         $addFields: {
           count: {
@@ -152,14 +136,34 @@ export const getCategories = async (req, res, next) => {
         }
       },
 
-      // 4️⃣ Cleanup
+      // 6️⃣ Cleanup and reshape
       {
         $project: {
-          products: 0
+          _id: 1,
+          name: 1,
+          slug: 1,
+          description: 1,
+          icon: 1,
+          published: 1,
+          order: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          count: 1,
+          parent: {
+            $cond: {
+              if: { $ne: ['$parentInfo', null] },
+              then: {
+                _id: '$parentInfo._id',
+                name: '$parentInfo.name',
+                slug: '$parentInfo.slug'
+              },
+              else: null
+            }
+          }
         }
       },
 
-      // 5️⃣ Sorting
+      // 7️⃣ Sorting
       {
         $sort: { order: 1, createdAt: -1 }
       }
@@ -371,6 +375,57 @@ export const togglePublished = async (req, res, next) => {
     });
   } catch (error) {
     console.error('❌ Error toggling published status:', error);
+    next(error);
+  }
+};
+
+// Get category tree (with subcategories)
+export const getCategoryTree = async (req, res, next) => {
+  try {
+    // Get all published parent categories
+    const parents = await Category.find({ parent: null, published: true })
+      .sort({ order: 1, name: 1 });
+
+    // For each parent, get its children
+    const tree = await Promise.all(
+      parents.map(async (parent) => {
+        const children = await Category.find({ 
+          parent: parent._id, 
+          published: true 
+        }).sort({ order: 1, name: 1 });
+
+        return {
+          ...parent.toObject(),
+          subcategories: children
+        };
+      })
+    );
+
+    res.json({ 
+      success: true, 
+      categories: tree 
+    });
+  } catch (error) {
+    console.error('❌ Error fetching category tree:', error);
+    next(error);
+  }
+};
+
+// Get subcategories of a parent
+export const getSubcategories = async (req, res, next) => {
+  try {
+    const subcategories = await Category.find({ 
+      parent: req.params.id,
+      published: true 
+    }).sort({ order: 1, name: 1 });
+
+    res.json({ 
+      success: true, 
+      subcategories,
+      total: subcategories.length
+    });
+  } catch (error) {
+    console.error('❌ Error fetching subcategories:', error);
     next(error);
   }
 };

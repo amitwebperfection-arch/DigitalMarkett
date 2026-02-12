@@ -415,15 +415,45 @@ function AddProduct() {
                   <option disabled>Loading categories...</option>
                 ) : (
                   categoryData?.categories
-                    ?.filter(cat => cat.published) // ✅ Only show published categories
-                    ?.map((cat) => (
-                      <option key={cat._id} value={cat.slug}>
-                        {cat.name}
-                      </option>
-                    ))
+                    ?.filter(cat => !cat.parent && cat.published)
+                    .map(parentCat => {
+                      const subcategories = categoryData.categories.filter(
+                        sub =>
+                          sub.parent &&
+                          sub.parent._id?.toString() === parentCat._id.toString() &&
+                          sub.published
+                      );
+                      
+                      // If there are subcategories, use optgroup
+                      if (subcategories.length > 0) {
+                        return (
+                          <optgroup key={parentCat._id} label={`${parentCat.name}`}>
+                            <option value={parentCat.slug}>
+                              {parentCat.name} (Main Category)
+                            </option>
+                            {subcategories.map(sub => (
+                              <option key={sub._id} value={sub.slug}>
+                                {sub.name}
+                              </option>
+                            ))}
+                          </optgroup>
+                        );
+                      } else {
+                        // No subcategories, just show parent
+                        return (
+                          <option key={parentCat._id} value={parentCat.slug}>
+                            {parentCat.name}
+                          </option>
+                        );
+                      }
+                    })
                 )}
               </select>
+              <p className="text-xs text-gray-500 mt-1">
+                Categories with subcategories are grouped together
+              </p>
             </div>
+            
             <div>
               <label className="block font-medium mb-2">Version</label>
               <input
@@ -436,7 +466,6 @@ function AddProduct() {
               />
             </div>
           </div>
-
           {/* ========== TAGS & COMPATIBLE WITH ========== */}
           <div className="grid grid-cols-2 gap-4">
             <div>

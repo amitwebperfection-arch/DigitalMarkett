@@ -39,9 +39,9 @@ function Login() {
       toast.success('Login successful!');
 
       if (data.user.role === 'admin') {
-        navigate('/admin/dashboard');
+        navigate('/admin');
       } else if (data.user.role === 'vendor') {
-        navigate('/vendor/dashboard');
+        navigate('/vendor');
       } else {
         navigate('/');
       }

@@ -6,6 +6,7 @@ import { categoryService } from '../../services/category.service';
 import toast from 'react-hot-toast';
 import { Upload, X, Plus, Trash2 } from 'lucide-react';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import CategoryDropdown from '../../components/common/CategoryDropdown';
 
 function EditProduct() {
   const navigate = useNavigate();
@@ -559,28 +560,17 @@ function EditProduct() {
           {/* ========== CATEGORY & VERSION ========== */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block font-medium mb-2">Category *</label>
-              <select
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                className="input w-full"
-                required
-              >
-                <option value="">Select a category</option>
-                {categoryLoading ? (
-                  <option disabled>Loading categories...</option>
-                ) : (
-                  categoryData?.categories
-                    ?.filter(cat => cat.published) // ✅ Only show published categories
-                    ?.map((cat) => (
-                      <option key={cat._id} value={cat.slug}>
-                        {cat.name}
-                      </option>
-                    ))
-                )}
-              </select>
-            </div>
+  <CategoryDropdown
+  categories={categoryData?.categories || []}
+  value={formData.category}
+  onChange={handleChange}
+/>
+  <p className="text-xs text-gray-500 mt-1">
+    Categories with subcategories are grouped together
+  </p>
+</div>
+
+            
             <div>
               <label className="block font-medium mb-2">Version</label>
               <input
@@ -593,7 +583,6 @@ function EditProduct() {
               />
             </div>
           </div>
-
           {/* ========== TAGS & COMPATIBLE WITH ========== */}
           <div className="grid grid-cols-2 gap-4">
             <div>

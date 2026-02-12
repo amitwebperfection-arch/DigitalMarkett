@@ -69,5 +69,16 @@ export const categoryService = {
       `/categories/${id}/toggle-published`
     );
     return data;
+  },
+  // Get category tree
+  getCategoryTree: async () => {
+    const { data } = await api.get('/categories/tree');
+    return data;
+  },
+
+  // Get subcategories
+  getSubcategories: async (parentId) => {
+    const { data } = await api.get(`/categories/${parentId}/subcategories`);
+    return data;
   }
 };

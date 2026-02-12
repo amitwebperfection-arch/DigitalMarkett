@@ -28,7 +28,8 @@ const AdminCategories = () => {
     name: '',
     description: '',
     icon: null,
-    published: true
+    published: true,
+    parent: null
   });
   const [iconPreview, setIconPreview] = useState(null);
   const [errors, setErrors] = useState({});
@@ -106,7 +107,8 @@ const AdminCategories = () => {
         name: category.name,
         description: category.description,
         icon: null,
-        published: category.published
+        published: category.published,
+        parent: category.parent?._id || category.parent || null // ✅ Handle both populated and unpopulated
       });
       setIconPreview(category.icon);
     } else if (mode === 'add') {
@@ -114,7 +116,8 @@ const AdminCategories = () => {
         name: '',
         description: '',
         icon: null,
-        published: true
+        published: true,
+        parent: null
       });
       setIconPreview(null);
     }
@@ -191,6 +194,13 @@ const AdminCategories = () => {
       formDataToSend.append('name', formData.name);
       formDataToSend.append('description', formData.description);
       formDataToSend.append('published', formData.published.toString());
+      
+      // ✅ ADD: Include parent field
+      if (formData.parent) {
+        formDataToSend.append('parent', formData.parent);
+      } else {
+        formDataToSend.append('parent', ''); // Send empty string for null
+      }
       
       if (formData.icon) {
         formDataToSend.append('icon', formData.icon);
@@ -421,8 +431,30 @@ const AdminCategories = () => {
                           </div>
                         )}
                       </td>
-                      <td className="px-4 py-4 text-sm font-medium text-gray-900">
-                        {category.name}
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-2">
+                          {/* ✅ Show subcategory badge */}
+                          {category.parent && (
+                            <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded font-medium">
+                              Subcategory
+                            </span>
+                          )}
+                          <span className="text-sm font-medium text-gray-900">
+                            {category.name}
+                          </span>
+                        </div>
+                        {/* ✅ Show parent name if it's a subcategory */}
+                        {category.parent && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            Parent: {category.parent.name || 'Unknown'}
+                          </p>
+                        )}
+                        {/* ✅ Show product count */}
+                        {category.count !== undefined && (
+                          <p className="text-xs text-gray-400 mt-1">
+                            {category.count} {category.count === 1 ? 'product' : 'products'}
+                          </p>
+                        )}
                       </td>
                       <td className="px-4 py-4 text-sm text-gray-600 max-w-xs truncate">
                         {category.description}
@@ -498,36 +530,43 @@ const AdminCategories = () => {
               </div>
 
               {/* Modal Body */}
-              {modalMode === 'view' ? (
-                <div className="p-6 space-y-6">
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">ID:</label>
-                    <p className="text-sm text-gray-900">{currentCategory?.id || currentCategory?._id}</p>
+                {modalMode === 'view' ? (
+                  <div className="p-6 space-y-6">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">ID:</label>
+                      <p className="text-sm text-gray-900">{currentCategory?.id || currentCategory?._id}</p>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Icon:</label>
+                      {currentCategory?.icon && (
+                        <img 
+                          src={currentCategory.icon} 
+                          alt={currentCategory.name} 
+                          className="w-20 h-20 rounded-lg object-cover border border-gray-200"
+                        />
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Name:</label>
+                      <p className="text-sm text-gray-900">{currentCategory?.name}</p>
+                    </div>
+                    {/* ✅ UPDATED: Show parent category properly */}
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Parent Category:</label>
+                      <p className="text-sm text-gray-900">
+                        {currentCategory?.parent?.name || 'None (Top Level)'}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Description:</label>
+                      <p className="text-sm text-gray-900">{currentCategory?.description}</p>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Published:</label>
+                      <p className="text-sm text-gray-900">{currentCategory?.published ? 'Yes' : 'No'}</p>
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Icon:</label>
-                    {currentCategory?.icon && (
-                      <img 
-                        src={currentCategory.icon} 
-                        alt={currentCategory.name} 
-                        className="w-20 h-20 rounded-lg object-cover border border-gray-200"
-                      />
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Name:</label>
-                    <p className="text-sm text-gray-900">{currentCategory?.name}</p>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Description:</label>
-                    <p className="text-sm text-gray-900">{currentCategory?.description}</p>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Published:</label>
-                    <p className="text-sm text-gray-900">{currentCategory?.published ? 'Yes' : 'No'}</p>
-                  </div>
-                </div>
-              ) : (
+                ) : (
                 <form onSubmit={handleSubmit} className="p-6">
                   {errors.submit && (
                     <div className="mb-6 flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
@@ -537,48 +576,73 @@ const AdminCategories = () => {
                   )}
 
                   <div className="space-y-5">
-                    <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                        Category Name *
-                      </label>
-                      <input
-                        type="text"
-                        id="name"
-                        value={formData.name}
-                        onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                        className={`w-full px-4 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all ${
-                          errors.name 
-                            ? 'border-red-300 focus:ring-red-500' 
-                            : 'border-gray-300 focus:ring-emerald-500 focus:border-transparent'
-                        }`}
-                        placeholder="e.g., Fruits & Vegetable"
-                      />
-                      {errors.name && (
-                        <p className="mt-1.5 text-xs text-red-600">{errors.name}</p>
-                      )}
-                    </div>
+                      <div>
+                        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                          Category Name *
+                        </label>
+                        <input
+                          type="text"
+                          id="name"
+                          value={formData.name}
+                          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                          className={`w-full px-4 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                            errors.name 
+                              ? 'border-red-300 focus:ring-red-500' 
+                              : 'border-gray-300 focus:ring-emerald-500 focus:border-transparent'
+                          }`}
+                          placeholder="e.g., Fruits & Vegetable"
+                        />
+                        {errors.name && (
+                          <p className="mt-1.5 text-xs text-red-600">{errors.name}</p>
+                        )}
+                      </div>
 
-                    <div>
-                      <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-                        Description *
-                      </label>
-                      <textarea
-                        id="description"
-                        value={formData.description}
-                        onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                        className={`w-full px-4 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all resize-none ${
-                          errors.description 
-                            ? 'border-red-300 focus:ring-red-500' 
-                            : 'border-gray-300 focus:ring-emerald-500 focus:border-transparent'
-                        }`}
-                        placeholder="Brief description of the category"
-                        rows="3"
-                      />
-                      {errors.description && (
-                        <p className="mt-1.5 text-xs text-red-600">{errors.description}</p>
-                      )}
-                    </div>
+                      {/* ✅ NEW: Parent Category Selection */}
+                      <div>
+                        <label htmlFor="parent" className="block text-sm font-medium text-gray-700 mb-2">
+                          Parent Category (Optional)
+                        </label>
+                        <select
+                          id="parent"
+                          value={formData.parent || ''}
+                          onChange={(e) => setFormData(prev => ({ ...prev, parent: e.target.value || null }))}
+                          className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                        >
+                          <option value="">None (Top Level Category)</option>
+                          {categories
+                            .filter(cat => !cat.parent && cat._id !== currentCategory?._id) // Only show parent categories, exclude self
+                            .map(cat => (
+                              <option key={cat._id} value={cat._id}>
+                                {cat.name}
+                              </option>
+                            ))
+                          }
+                        </select>
+                        <p className="mt-1.5 text-xs text-gray-500">
+                          Leave empty to create a top-level category
+                        </p>
+                      </div>
 
+                      <div>
+                        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                          Description *
+                        </label>
+                        <textarea
+                          id="description"
+                          value={formData.description}
+                          onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                          className={`w-full px-4 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all resize-none ${
+                            errors.description 
+                              ? 'border-red-300 focus:ring-red-500' 
+                              : 'border-gray-300 focus:ring-emerald-500 focus:border-transparent'
+                          }`}
+                          placeholder="Brief description of the category"
+                          rows="3"
+                        />
+                        {errors.description && (
+                          <p className="mt-1.5 text-xs text-red-600">{errors.description}</p>
+                        )}
+                      </div>
                     <div>
                       <label htmlFor="icon" className="block text-sm font-medium text-gray-700 mb-2">
                         Category Icon {modalMode === 'add' && '*'}

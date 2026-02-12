@@ -51,7 +51,6 @@ export const authService = {
     return response.data;
   },
 
-  // ✅ ADD THIS - Get current user profile
   getProfile: async () => {
     const { data } = await api.get('/users/me');
     return data;

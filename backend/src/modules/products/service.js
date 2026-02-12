@@ -55,12 +55,6 @@ export const createProduct = async (productData, vendorId) => {
     }
   }
   
-  console.log('💾 Saving to DB:', {
-    ...productData,
-    slug,
-    vendor: vendorId
-  });
-  
   const product = await Product.create({
     ...productData,
     slug,
@@ -71,8 +65,6 @@ export const createProduct = async (productData, vendorId) => {
       count: 0
     }
   });
-
-  console.log('✅ Product saved with thumbnail:', product.thumbnail);
 
   return product;
 };

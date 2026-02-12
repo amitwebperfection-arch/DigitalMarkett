@@ -31,7 +31,6 @@ export const createReview = async (userId, productId, rating, title, comment) =>
   // ✅ CRITICAL: Update product rating immediately after creating review
   await updateProductRating(productId);
 
-  console.log(`✅ Review created and product rating updated for product: ${productId}`);
 
   return review;
 };
@@ -58,20 +57,17 @@ export const deleteReview = async (reviewId) => {
   // ✅ Update product rating after deleting review
   await updateProductRating(review.product);
 
-  console.log(`✅ Review deleted and product rating updated for product: ${review.product}`);
 
   return review;
 };
 
 // ✅ FIXED: Properly update product rating
 const updateProductRating = async (productId) => {
-  console.log(`🔄 Updating rating for product: ${productId}`);
 
   try {
     // Get all reviews for this product
     const reviews = await Review.find({ product: productId });
     
-    console.log(`   Found ${reviews.length} reviews`);
 
     if (reviews.length > 0) {
       // Calculate average rating
@@ -81,7 +77,6 @@ const updateProductRating = async (productId) => {
       // Round to 1 decimal place
       const roundedAvg = Math.round(avgRating * 10) / 10;
 
-      console.log(`   Average rating: ${roundedAvg} (${reviews.length} reviews)`);
 
       // ✅ Update product with new rating
       const updatedProduct = await Product.findByIdAndUpdate(
@@ -93,10 +88,7 @@ const updateProductRating = async (productId) => {
         { new: true }
       );
 
-      console.log(`   ✅ Product rating updated:`, updatedProduct?.rating);
     } else {
-      // No reviews, reset to 0
-      console.log(`   No reviews found, resetting rating to 0`);
       
       await Product.findByIdAndUpdate(
         productId,
@@ -107,7 +99,6 @@ const updateProductRating = async (productId) => {
         { new: true }
       );
 
-      console.log(`   ✅ Product rating reset to 0`);
     }
   } catch (error) {
     console.error(`   ❌ Error updating product rating:`, error);

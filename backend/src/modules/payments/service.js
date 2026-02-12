@@ -50,8 +50,6 @@ export const handleStripeWebhook = async (signature, rawBody) => {
     throw err;
   }
 
-  console.log('✅ Stripe Event:', event.type);
-
   try {
     if (event.type === 'payment_intent.succeeded') {
       const pi = event.data.object;

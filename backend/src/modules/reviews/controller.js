@@ -4,7 +4,6 @@ export const createReview = async (req, res, next) => {
   try {
     const { productId, rating, title, comment } = req.body;
 
-    console.log('📝 Creating review:', { productId, rating, title });
 
     // Create review
     const review = await reviewService.createReview(
@@ -15,12 +14,10 @@ export const createReview = async (req, res, next) => {
       comment
     );
 
-    console.log('✅ Review created:', review._id);
 
     // Fetch updated product to get new rating
     const updatedProduct = await reviewService.getProductWithRating(productId);
 
-    console.log('📊 Updated product rating:', updatedProduct?.rating);
 
     res.status(201).json({
       success: true,
@@ -64,11 +61,9 @@ export const recalculateRating = async (req, res, next) => {
   try {
     const { productId } = req.params;
     
-    console.log(`🔄 Manually recalculating rating for product: ${productId}`);
     
     const result = await reviewService.recalculateProductRating(productId);
     
-    console.log('✅ Rating recalculated:', result);
     
     res.json({ 
       success: true, 

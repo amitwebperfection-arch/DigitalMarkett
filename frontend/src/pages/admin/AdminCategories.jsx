@@ -42,10 +42,8 @@ const AdminCategories = () => {
     try {
       setLoading(true);
       const response = await categoryService.getCategories();
-      console.log('📦 Categories fetched:', response);
       setCategories(response.categories || []);
     } catch (error) {
-      console.error('❌ Error fetching categories:', error);
       setErrors({ fetch: 'Failed to load categories' });
     } finally {
       setLoading(false);
@@ -81,7 +79,6 @@ const AdminCategories = () => {
   // Toggle published status
   const handleTogglePublished = async (categoryId, currentStatus) => {
     try {
-      console.log('🔄 Toggling published status for:', categoryId);
       
       // Create FormData for the update
       const formData = new FormData();
@@ -93,8 +90,6 @@ const AdminCategories = () => {
       setCategories(prev => prev.map(cat => 
         cat._id === categoryId ? { ...cat, published: !currentStatus } : cat
       ));
-      
-      console.log('✅ Published status updated');
     } catch (error) {
       console.error('❌ Error updating category:', error);
       alert('Failed to update category status');
@@ -201,14 +196,10 @@ const AdminCategories = () => {
         formDataToSend.append('icon', formData.icon);
       }
 
-      console.log('📤 Submitting category...');
-
       if (modalMode === 'add') {
         await categoryService.createCategory(formDataToSend);
-        console.log('✅ Category created');
       } else {
         await categoryService.updateCategory(currentCategory._id, formDataToSend);
-        console.log('✅ Category updated');
       }
 
       fetchCategories();
@@ -224,13 +215,10 @@ const AdminCategories = () => {
     if (!window.confirm('Are you sure you want to delete this category?')) return;
 
     try {
-      console.log('🗑️ Deleting category:', categoryId);
       await categoryService.deleteCategory(categoryId);
       
       setCategories(prev => prev.filter(cat => cat._id !== categoryId));
       setSelectedCategories(prev => prev.filter(id => id !== categoryId));
-      
-      console.log('✅ Category deleted');
     } catch (error) {
       console.error('❌ Error deleting category:', error);
       alert(error.response?.data?.message || 'Failed to delete category');
@@ -247,13 +235,11 @@ const AdminCategories = () => {
     if (!window.confirm(`Delete ${selectedCategories.length} selected categories?`)) return;
 
     try {
-      console.log('🗑️ Bulk deleting categories:', selectedCategories);
       await categoryService.bulkDeleteCategories(selectedCategories);
       
       fetchCategories();
       setSelectedCategories([]);
       
-      console.log('✅ Categories deleted');
     } catch (error) {
       console.error('❌ Error bulk deleting:', error);
       alert(error.response?.data?.message || 'Failed to delete categories');

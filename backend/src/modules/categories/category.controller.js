@@ -6,20 +6,16 @@ import Product from '../products/model.js';
 // Create category
 export const createCategory = async (req, res, next) => {
   try {
-    console.log('📁 Files received:', req.files);
-    console.log('📝 Body data:', req.body);
 
     let iconUrl = null;
 
     // Upload icon to Cloudinary
     if (req.files?.icon?.[0]) {
-      console.log('☁️ Uploading category icon...');
       const result = await uploadToCloudinary(
         req.files.icon[0], 
         'categories/icons'
       );
       iconUrl = result.secure_url;
-      console.log('✅ Icon uploaded:', iconUrl);
     } else if (req.file) {
       // Handle single file upload
       const result = await uploadToCloudinary(
@@ -44,8 +40,6 @@ export const createCategory = async (req, res, next) => {
       published: req.body.published === 'true' || req.body.published === true,
       parent: req.body.parent || null
     });
-
-    console.log('✅ Category created:', category._id);
 
     res.status(201).json({ 
       success: true, 
@@ -230,8 +224,6 @@ export const getCategoryBySlug = async (req, res, next) => {
 // Update category
 export const updateCategory = async (req, res, next) => {
   try {
-    console.log('📝 Update - Body data:', req.body);
-    console.log('📁 Update - Files received:', req.files || req.file);
 
     const category = await Category.findById(req.params.id);
 
@@ -244,11 +236,9 @@ export const updateCategory = async (req, res, next) => {
 
     // Update icon if new one is uploaded
     if (req.files?.icon?.[0] || req.file) {
-      console.log('☁️ Uploading new category icon...');
       const file = req.files?.icon?.[0] || req.file;
       const result = await uploadToCloudinary(file, 'categories/icons');
       category.icon = result.secure_url;
-      console.log('✅ New icon uploaded:', category.icon);
     }
 
     // Update other fields
@@ -266,7 +256,6 @@ export const updateCategory = async (req, res, next) => {
 
     await category.save();
 
-    console.log('✅ Category updated:', category._id);
 
     res.json({ 
       success: true, 
@@ -310,7 +299,7 @@ export const deleteCategory = async (req, res, next) => {
 
     await category.deleteOne();
 
-    console.log('✅ Category deleted:', category._id);
+    
 
     res.json({ 
       success: true, 
@@ -348,7 +337,7 @@ export const bulkDeleteCategories = async (req, res, next) => {
 
     const result = await Category.deleteMany({ _id: { $in: ids } });
 
-    console.log(`✅ ${result.deletedCount} categories deleted`);
+    
 
     res.json({ 
       success: true, 

@@ -54,8 +54,6 @@ function Home() {
 
   const handleNewsletterSubmit = (e) => {
     e.preventDefault();
-    // Handle newsletter subscription
-    console.log('Newsletter subscription:', email);
     setEmail('');
   };
 

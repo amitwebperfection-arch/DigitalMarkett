@@ -132,7 +132,7 @@ function ProductDetails() {
           url: window.location.href,
         });
       } catch (err) {
-        console.log('Share cancelled');
+        toast.error('Share cancelled');
       }
     } else {
       navigator.clipboard.writeText(window.location.href);
@@ -158,8 +158,31 @@ function ProductDetails() {
     );
   }
 
-  const allImages = [product.thumbnail, ...(product.images?.map(img => img.url) || [])];
-  const currentImage = allImages[selectedImage];
+  // ✅ FIXED: Better image array construction with fallback
+  const buildImageGallery = () => {
+    const images = [];
+    
+    // Add thumbnail first
+    if (product.thumbnail) {
+      images.push(product.thumbnail);
+    }
+    
+    // Add additional images
+    if (product.images && Array.isArray(product.images)) {
+      product.images.forEach(img => {
+        // Handle both object format {url: '...'} and string format
+        const imageUrl = typeof img === 'string' ? img : img?.url;
+        if (imageUrl && imageUrl !== product.thumbnail) {
+          images.push(imageUrl);
+        }
+      });
+    }
+    return images;
+  };
+
+  const allImages = buildImageGallery();
+  const currentImage = allImages[selectedImage] || product.thumbnail || '/placeholder.jpg';
+  
   const discountPercent = product.salePrice
     ? Math.round(((product.price - product.salePrice) / product.price) * 100)
     : 0;
@@ -193,6 +216,9 @@ function ProductDetails() {
                 src={currentImage}
                 alt={product.title}
                 className="w-full h-[450px] object-cover"
+                onError={(e) => {
+                  e.target.src = '/placeholder.jpg';
+                }}
               />
               
               {/* Badges */}
@@ -238,22 +264,31 @@ function ProductDetails() {
 
             {/* Thumbnail Gallery */}
             {allImages.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto pb-2">
+              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
                 {allImages.map((img, idx) => (
                   <button
                     key={idx}
                     onClick={() => setSelectedImage(idx)}
                     className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-3 transition-all ${
                       selectedImage === idx
-                        ? 'border-primary-600 shadow-lg scale-105'
+                        ? 'border-primary-600 shadow-lg scale-105 ring-2 ring-primary-200'
                         : 'border-gray-200 hover:border-gray-400'
                     }`}
                   >
-                    <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                    <img 
+                      src={img} 
+                      alt={`Thumbnail ${idx + 1}`} 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.src = '/placeholder.jpg';
+                      }}
+                    />
                   </button>
                 ))}
               </div>
             )}
+
+           
           </div>
 
           {/* Product Info */}

@@ -4,8 +4,6 @@ import Product from './model.js';
 
 export const createProduct = async (req, res, next) => {
   try {
-    console.log('📁 Files received:', req.files);
-    console.log('📝 Body data:', req.body);
 
     const uploadedData = {
       thumbnail: null,
@@ -15,18 +13,15 @@ export const createProduct = async (req, res, next) => {
 
     // ========== Upload Thumbnail ==========
     if (req.files?.thumbnail?.[0]) {
-      console.log('☁️ Uploading thumbnail...');
       const result = await uploadToCloudinary(
         req.files.thumbnail[0], 
         'products/thumbnails'
       );
       uploadedData.thumbnail = result.secure_url;
-      console.log('✅ Thumbnail uploaded:', uploadedData.thumbnail);
     }
 
     // ========== Upload Additional Images ==========
     if (req.files?.images?.length > 0) {
-      console.log('☁️ Uploading additional images...');
       const imagePromises = req.files.images.map(file => 
         uploadToCloudinary(file, 'products/gallery')
       );
@@ -35,12 +30,10 @@ export const createProduct = async (req, res, next) => {
         url: result.secure_url,
         alt: req.body.title || 'Product image'
       }));
-      console.log(`✅ ${uploadedData.images.length} images uploaded`);
     }
 
     // ========== Upload Product Files ==========
     if (req.files?.files?.length > 0) {
-      console.log('☁️ Uploading product files...');
       const filePromises = req.files.files.map(file => 
         uploadToCloudinary(file, 'products/files')
       );
@@ -51,7 +44,6 @@ export const createProduct = async (req, res, next) => {
         size: req.files.files[index].size,
         type: req.files.files[index].mimetype
       }));
-      console.log(`✅ ${uploadedData.files.length} files uploaded`);
     }
 
     // ========== Parse Changelog ==========
@@ -75,28 +67,15 @@ export const createProduct = async (req, res, next) => {
 
     // Create product
     const product = await productService.createProduct(productData, req.user.id);
-    
-    console.log('✅ Product created:', product._id);
 
     res.status(201).json({ 
       success: true, 
       product 
     });
   } catch (error) {
-    console.error('❌ Error creating product:', error);
     next(error);
   }
 };
-
-// export const getProducts = async (req, res, next) => {
-//   try {
-//     const { page = 1, limit = 12, ...filters } = req.query;
-//     const result = await productService.getProducts(filters, Number(page), Number(limit));
-//     res.json({ success: true, ...result });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
 
 export const getRelatedProducts = async (req, res, next) => {
   try {
@@ -122,25 +101,20 @@ export const getProductBySlug = async (req, res, next) => {
 
 export const updateProduct = async (req, res, next) => {
   try {
-    console.log('📁 Update - Files received:', req.files);
-    console.log('📝 Update - Body data:', req.body);
 
     const uploadedData = {};
 
     // Upload new thumbnail if provided
     if (req.files?.thumbnail?.[0]) {
-      console.log('☁️ Uploading new thumbnail...');
       const result = await uploadToCloudinary(
         req.files.thumbnail[0], 
         'products/thumbnails'
       );
       uploadedData.thumbnail = result.secure_url;
-      console.log('✅ New thumbnail uploaded');
     }
 
     // Upload additional images if provided
     if (req.files?.images?.length > 0) {
-      console.log('☁️ Uploading additional images...');
       const imagePromises = req.files.images.map(file => 
         uploadToCloudinary(file, 'products/gallery')
       );
@@ -149,12 +123,10 @@ export const updateProduct = async (req, res, next) => {
         url: result.secure_url,
         alt: req.body.title || 'Product image'
       }));
-      console.log(`✅ ${uploadedData.images.length} new images uploaded`);
     }
 
     // Upload new files if provided
     if (req.files?.files?.length > 0) {
-      console.log('☁️ Uploading new product files...');
       const filePromises = req.files.files.map(file => 
         uploadToCloudinary(file, 'products/files')
       );
@@ -165,7 +137,6 @@ export const updateProduct = async (req, res, next) => {
         size: req.files.files[index].size,
         type: req.files.files[index].mimetype
       }));
-      console.log(`✅ ${uploadedData.files.length} new files uploaded`);
     }
 
     // Parse changelog if provided
@@ -191,7 +162,6 @@ export const updateProduct = async (req, res, next) => {
     
     res.json({ success: true, product });
   } catch (error) {
-    console.error('❌ Error updating product:', error);
     next(error);
   }
 };
@@ -269,7 +239,7 @@ export const getVendorProducts = async (req, res, next) => {
 
     const skip = (page - 1) * limit;
 
-    const query = { vendor: req.user._id }; // 🔥 MAIN FILTER - Only vendor's products
+    const query = { vendor: req.user._id }; 
 
     const products = await Product.find(query)
       .sort({ createdAt: -1 })
@@ -289,13 +259,9 @@ export const getVendorProducts = async (req, res, next) => {
   }
 };
 
-// ✅ ADD NEW ENDPOINT: Get all products (public page)
 export const getProducts = async (req, res, next) => {
   try {
     const { page = 1, limit = 12, ...filters } = req.query;
-    
-    // ✅ IMPORTANT: Don't pass vendor filter for public pages
-    // This will trigger the default filters in service (approved + published)
     const result = await productService.getProducts(filters, Number(page), Number(limit));
     
     res.json({ success: true, ...result });

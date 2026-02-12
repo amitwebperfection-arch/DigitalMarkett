@@ -6,6 +6,10 @@ export const productService = {
     const { data } = await api.get('/products', { params });
     return data;
   },
+  getAdminProducts: async (params = {}) => {
+    const { data } = await api.get('/admin/products', { params });
+    return data;
+  },
 
   // ✅ ADD THIS: Get VENDOR's own products (for vendor dashboard)
   getVendorProducts: async (params = {}) => {
@@ -24,12 +28,8 @@ export const productService = {
   },
 
   createProduct: async (formData) => {
-    console.log('📤 Sending FormData to backend');
     
-    // Log FormData contents (for debugging)
-    for (let [key, value] of formData.entries()) {
-      console.log(`${key}:`, value);
-    }
+  
     
     const { data } = await api.post('/products', formData, {
       headers: {
@@ -37,17 +37,12 @@ export const productService = {
       }
     });
     
-    console.log('✅ Response:', data);
     return data;
   },
 
   updateProduct: async (id, productData) => {
-    console.log('📤 Updating product:', id);
     
-    // Log FormData contents
-    for (let [key, value] of productData.entries()) {
-      console.log(`${key}:`, value);
-    }
+    
     
     const { data } = await api.put(`/products/${id}`, productData, {
       headers: {
@@ -55,7 +50,6 @@ export const productService = {
       }
     });
     
-    console.log('✅ Update response:', data);
     return data;
   },
 

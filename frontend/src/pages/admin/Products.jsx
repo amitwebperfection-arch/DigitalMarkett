@@ -5,25 +5,27 @@ import Table from '../../components/common/Table';
 import Pagination from '../../components/common/Pagination';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import toast from 'react-hot-toast';
-import { CheckCircle, XCircle, Clock, Eye } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Eye, Package } from 'lucide-react';
 import { format } from 'date-fns';
 
 function AdminProducts() {
   const [page, setPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState('pending'); 
+  const [statusFilter, setStatusFilter] = useState('all'); 
   const queryClient = useQueryClient();
 
   // Fetch products based on status filter
   const { data, isLoading } = useQuery({
     queryKey: ['admin-products', page, statusFilter],
-    queryFn: () => {
+    queryFn: async () => {
       const params = { page, limit: 10 };
       if (statusFilter !== 'all') {
         params.status = statusFilter;
       }
-      return productService.getProducts(params);
+      const result = await productService.getAdminProducts(params);
+      return result;
     },
-    keepPreviousData: true
+    keepPreviousData: true,
+    staleTime: 0, // Don't use cached data
   });
 
   // Approve product mutation
@@ -79,7 +81,7 @@ function AdminProducts() {
         <div>
           <p className="font-semibold text-gray-900 line-through">${row.price?.toFixed(2) || '0.00'}</p>
           {row.salePrice && (
-            <p className="text-xs text-green-600 ">${row.salePrice.toFixed(2)}</p>
+            <p className="text-xs text-green-600">${row.salePrice.toFixed(2)}</p>
           )}
         </div>
       )
@@ -162,8 +164,15 @@ function AdminProducts() {
     }
   ];
 
-  // Stats for each status
+  // Stats for each status - FIXED: Added "All" tab
   const stats = [
+    {
+      label: 'All Products',
+      value: 'all',
+      count: data?.total || 0,
+      icon: Package,
+      color: 'bg-blue-100 text-blue-800 border-blue-300'
+    },
     {
       label: 'Pending',
       value: 'pending',
@@ -204,7 +213,7 @@ function AdminProducts() {
           <p className="text-gray-600 mt-1">Review and manage all products on the platform</p>
         </div>
 
-        {/* Status Stats Cards */}
+        {/* Status Stats Cards - FIXED: Now properly shows active state */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((stat) => {
             const Icon = stat.icon;

@@ -44,12 +44,10 @@ function AddProduct() {
   const createMutation = useMutation({
     mutationFn: productService.createProduct,
     onSuccess: (response) => {
-      console.log('✅ Product created:', response);
       toast.success('Product created successfully!');
       navigate('/vendor/products');
     },
     onError: (error) => {
-      console.error('❌ Error:', error);
       toast.error(error.response?.data?.message || 'Failed to create product');
     }
   });
@@ -62,7 +60,7 @@ function AddProduct() {
     }));
   };
 
-  // Thumbnail handling
+  // ✅ FIXED: Thumbnail handling with proper validation
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -76,6 +74,7 @@ function AddProduct() {
       }
 
       setThumbnail(file);
+      
       const reader = new FileReader();
       reader.onloadend = () => setPreview(reader.result);
       reader.readAsDataURL(file);
@@ -213,8 +212,21 @@ function AddProduct() {
       return;
     }
 
-    // Create FormData
+    // ✅ CRITICAL FIX: Create FormData with thumbnail FIRST
     const data = new FormData();
+
+    // ✅ Append thumbnail FIRST with explicit filename
+    data.append('thumbnail', thumbnail, thumbnail.name);
+
+    // Additional Images
+    additionalImages.forEach((img, index) => {
+      data.append('images', img, img.name);
+    });
+
+    // Product Files
+    productFiles.forEach((file, index) => {
+      data.append('files', file, file.name);
+    });
 
     // Basic fields
     data.append('title', formData.title);
@@ -248,24 +260,6 @@ function AddProduct() {
         .filter(Boolean)
         .forEach(item => data.append('compatibleWith', item));
     }
-
-    // Thumbnail
-    data.append('thumbnail', thumbnail);
-
-    // Additional Images
-    additionalImages.forEach(img => {
-      data.append('images', img);
-    });
-
-    // Product Files
-    productFiles.forEach(file => {
-      data.append('files', file);
-    });
-
-    // Changelog
-    data.append('changelog', JSON.stringify(changelog));
-
-    console.log('📤 Submitting product');
 
     createMutation.mutate(data);
   };

@@ -1,6 +1,8 @@
 import * as adminService from './service.js';
 import Settings from './settings.model.js';
 import ContactMessage from '../contact/contactModel.js';
+import Product from '../products/model.js';
+
 
 export const getDashboard = async (req, res, next) => {
   try {
@@ -139,6 +141,55 @@ export const getAllMessages = async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch messages'
+    });
+  }
+};
+
+export const getAdminProducts = async (req, res) => {
+  try {
+    const { page = 1, limit = 10, status } = req.query;
+    
+    const skip = (page - 1) * limit;
+    
+    // Build filter query
+    const filter = {};
+    if (status && status !== 'all') {
+      filter.status = status;
+    }
+
+    // Get products with filter
+    const products = await Product.find(filter)
+      .populate('vendor', 'name email')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+
+    // Get total count for pagination
+    const total = await Product.countDocuments(filter);
+    
+    // Get counts for each status (for the stats cards)
+    const [pendingCount, approvedCount, rejectedCount] = await Promise.all([
+      Product.countDocuments({ status: 'pending' }),
+      Product.countDocuments({ status: 'approved' }),
+      Product.countDocuments({ status: 'rejected' })
+    ]);
+
+    res.status(200).json({
+      success: true,
+      products,
+      total,
+      totalPages: Math.ceil(total / limit),
+      currentPage: parseInt(page),
+      pendingCount,
+      approvedCount,
+      rejectedCount
+    });
+  } catch (error) {
+    console.error('Error fetching admin products:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch products',
+      error: error.message
     });
   }
 };

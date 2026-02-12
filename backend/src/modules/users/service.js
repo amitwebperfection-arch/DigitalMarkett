@@ -102,8 +102,6 @@ export const getUserDownloads = async (userId) => {
       select: 'title thumbnail files version'
     })
     .sort({ createdAt: -1 });
-
-  console.log(`Found ${licenses.length} licenses for user ${userId}`);
   
   // Filter out licenses where product was deleted
   return licenses.filter(license => license.product !== null);

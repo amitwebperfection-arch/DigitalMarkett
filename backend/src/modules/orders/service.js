@@ -153,7 +153,6 @@ export const completeOrder = async (orderId, paymentId) => {
         { session }
       );
 
-      console.log(`Creating license for product ${item.product._id}`);
       await License.create([{
         user: order.user,
         product: item.product._id,
@@ -165,7 +164,6 @@ export const completeOrder = async (orderId, paymentId) => {
         downloadCount: 0,
         expiresAt: null
       }], { session });
-      console.log(`✅ License created for product ${item.product._id}`);
     }
 
     for (const vendorId in vendorTotals) {
@@ -189,8 +187,6 @@ export const completeOrder = async (orderId, paymentId) => {
 
     await session.commitTransaction();
     session.endSession();
-
-    console.log(`✅ Order ${orderId} completed successfully`);
     return order;
 
   } catch (error) {

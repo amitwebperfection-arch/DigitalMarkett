@@ -23,11 +23,9 @@ export const categoryService = {
 
   // Create category
   createCategory: async (formData) => {
-    console.log('📤 Sending Category FormData');
 
     // Debug FormData
     for (let [key, value] of formData.entries()) {
-      console.log(`${key}:`, value);
     }
 
     const { data } = await api.post('/categories', formData, {
@@ -36,16 +34,13 @@ export const categoryService = {
       }
     });
 
-    console.log('✅ Category created:', data);
     return data;
   },
 
   // Update category
   updateCategory: async (id, formData) => {
-    console.log('📤 Updating Category:', id);
 
     for (let [key, value] of formData.entries()) {
-      console.log(`${key}:`, value);
     }
 
     const { data } = await api.put(`/categories/${id}`, formData, {
@@ -53,8 +48,6 @@ export const categoryService = {
         'Content-Type': 'multipart/form-data'
       }
     });
-
-    console.log('✅ Category updated:', data);
     return data;
   },
 

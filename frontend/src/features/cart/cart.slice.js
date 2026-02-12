@@ -56,7 +56,6 @@ const cartSlice = createSlice({
 
     // 🔥 DRAWER CONTROLS
     openDrawer: (state) => {
-      console.log('DRAWER OPEN ACTION HIT');
       state.isDrawerOpen = true;
     },
 

@@ -104,7 +104,7 @@ function EditProduct() {
     }));
   };
 
-  // Thumbnail handling
+  // ✅ FIXED: Thumbnail handling with logging
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -118,6 +118,7 @@ function EditProduct() {
       }
 
       setThumbnail(file);
+      
       const reader = new FileReader();
       reader.onloadend = () => setPreview(reader.result);
       reader.readAsDataURL(file);
@@ -253,7 +254,26 @@ function EditProduct() {
     // Create FormData
     const data = new FormData();
 
-    // Basic fields
+    // Thumbnail
+    if (thumbnail) {
+      data.append('thumbnail', thumbnail, thumbnail.name);
+    }
+
+    // Additional Images
+    if (additionalImages.length > 0) {
+      additionalImages.forEach((img) => {
+        data.append('images', img, img.name);
+      });
+    }
+
+    // Product Files
+    if (productFiles.length > 0) {
+      productFiles.forEach((file) => {
+        data.append('files', file, file.name);
+      });
+    }
+
+    // Text fields
     data.append('title', formData.title);
     data.append('description', formData.description);
     data.append('shortDescription', formData.shortDescription);
@@ -286,26 +306,10 @@ function EditProduct() {
         .forEach(item => data.append('compatibleWith', item));
     }
 
-    // Thumbnail (only if new one uploaded)
-    if (thumbnail) {
-      data.append('thumbnail', thumbnail);
-    }
-
-    // Additional Images
-    additionalImages.forEach(img => {
-      data.append('images', img);
-    });
-
-    // Product Files
-    productFiles.forEach(file => {
-      data.append('files', file);
-    });
-
     // Changelog
     data.append('changelog', JSON.stringify(changelog));
 
-    console.log('📤 Updating product with ID:', id);
-
+    // Submit
     updateMutation.mutate({ id, data });
   };
 

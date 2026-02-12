@@ -49,6 +49,8 @@ router.put('/vendors/:id/suspend', adminController.suspendVendor);
 router.get('/payouts', adminController.getPayouts);
 router.put('/payouts/:id/process', adminController.processPayout);
 
+router.get('/products', adminController.getAdminProducts);
+
 // Settings
 router.get('/settings', adminController.getSettings);
 router.put('/settings', adminController.updateSettings);

@@ -1,73 +1,36 @@
-# Node.js (for both frontend and backend)
+# ========================
+# Node Modules
+# ========================
 node_modules/
-npm-debug.log
-yarn-debug.log
-yarn-error.log
-package-lock.json
-yarn.lock
-
-# Build output
-/dist
-/build
 
 # Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 *.log
-logs/
 
-# Operating System files
-.DS_Store
-Thumbs.db
-
-# Environment variables
+# Environment Variables
 .env
 .env.local
 .env.*.local
 
-# IDE settings (e.g., VSCode, IntelliJ, etc.)
+# Build Output
+dist/
+build/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# IDE
 .vscode/
 .idea/
-*.sublime-workspace
-*.sublime-project
 
-# Frontend (React, Vue, etc.)
-/public/
-*.tsx
-*.ts
-*.jsx
-*.js
+# Test Coverage
+coverage/
 
-# Backend (Node.js, Python, etc.)
-# Node.js server
-/server/
-*.ts
-*.js
-*.mjs
-
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-*.db
-
-# Temporary Files
+# Temporary files
 *.swp
 *.swo
-
-# Dependency directories
-/.nuxt
-/.next
-/.serverless
-/.webpack
-
-# Test output
-/coverage
-/test-results
-
-# Docker-related
-docker-compose.override.yml
-.docker/
-
-# Miscellaneous
-*.bak
 *.tmp
+*.bak

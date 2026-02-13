@@ -9,9 +9,9 @@ function PublicLayout() {
       <Navbar />
       <CartDrawer /> 
 
-    <main className="container mx-auto px-4 min-h-screen">
-    <Outlet />
-    </main>
+      <main className="container mx-auto px-4 md:px-6 lg:px-8 min-h-screen py-4 md:py-6">
+        <Outlet />
+      </main>
 
       <Footer />
     </>

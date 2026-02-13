@@ -4,13 +4,17 @@ import { productService } from '../../services/product.service';
 import Table from '../../components/common/Table';
 import Pagination from '../../components/common/Pagination';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import MobileCard from '../../components/common/MobileCard';
+import DetailModal, { DetailRow } from '../../components/common/DetailModal';
 import toast from 'react-hot-toast';
-import { CheckCircle, XCircle, Clock, Eye, Package } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Eye, Package, DollarSign, User, Tag } from 'lucide-react';
 import { format } from 'date-fns';
 
 function AdminProducts() {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('all'); 
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showModal, setShowModal] = useState(false);
   const queryClient = useQueryClient();
 
   // Fetch products based on status filter
@@ -25,7 +29,7 @@ function AdminProducts() {
       return result;
     },
     keepPreviousData: true,
-    staleTime: 0, // Don't use cached data
+    staleTime: 0,
   });
 
   // Approve product mutation
@@ -34,6 +38,7 @@ function AdminProducts() {
     onSuccess: () => {
       toast.success('Product approved successfully');
       queryClient.invalidateQueries(['admin-products']);
+      setShowModal(false);
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || 'Failed to approve product');
@@ -46,11 +51,80 @@ function AdminProducts() {
     onSuccess: () => {
       toast.success('Product rejected successfully');
       queryClient.invalidateQueries(['admin-products']);
+      setShowModal(false);
     },
     onError: (error) => {
       toast.error(error.response?.data?.message || 'Failed to reject product');
     }
   });
+
+  const handleCardClick = (product) => {
+    setSelectedProduct(product);
+    setShowModal(true);
+  };
+
+  // Mobile card fields
+  const mobileFields = [
+    {
+      label: 'Product',
+      key: 'title',
+      render: (product) => (
+        <div className="flex items-center gap-3">
+          <img
+            src={product.thumbnail || '/placeholder.jpg'}
+            alt={product.title}
+            className="w-16 h-16 object-cover rounded-lg border border-gray-200"
+          />
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-gray-900">{product.title}</p>
+            <p className="text-xs text-gray-500">{product.category}</p>
+          </div>
+        </div>
+      )
+    },
+    {
+      label: 'Price',
+      key: 'price',
+      render: (product) => (
+        <div className="flex items-center gap-1">
+          <DollarSign size={14} className="text-green-600" />
+          <div>
+            <p className="font-semibold text-gray-900">${product.price?.toFixed(2) || '0.00'}</p>
+            {product.salePrice && (
+              <p className="text-xs text-green-600">${product.salePrice.toFixed(2)}</p>
+            )}
+          </div>
+        </div>
+      )
+    },
+    {
+      label: 'Vendor',
+      key: 'vendor',
+      render: (product) => (
+        <div className="flex items-center gap-2">
+          <User size={14} className="text-gray-400" />
+          <span className="text-sm">{product.vendor?.name || 'N/A'}</span>
+        </div>
+      )
+    },
+    {
+      label: 'Status',
+      key: 'status',
+      render: (product) => (
+        <span
+          className={`px-2 py-1 rounded-full text-xs font-semibold ${
+            product.status === 'approved'
+              ? 'bg-green-100 text-green-800'
+              : product.status === 'pending'
+              ? 'bg-yellow-100 text-yellow-800'
+              : 'bg-red-100 text-red-800'
+          }`}
+        >
+          {product.status}
+        </span>
+      )
+    }
+  ];
 
   const columns = [
     {
@@ -79,7 +153,7 @@ function AdminProducts() {
       label: 'Price',
       render: (row) => (
         <div>
-          <p className="font-semibold text-gray-900 line-through">${row.price?.toFixed(2) || '0.00'}</p>
+          <p className="font-semibold text-gray-900">${row.price?.toFixed(2) || '0.00'}</p>
           {row.salePrice && (
             <p className="text-xs text-green-600">${row.salePrice.toFixed(2)}</p>
           )}
@@ -164,7 +238,7 @@ function AdminProducts() {
     }
   ];
 
-  // Stats for each status - FIXED: Added "All" tab
+  // Stats for each status
   const stats = [
     {
       label: 'All Products',
@@ -205,16 +279,16 @@ function AdminProducts() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container-custom space-y-6">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-6 md:py-8">
+      <div className="container-custom px-2 sm:px-4 space-y-4 sm:space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Manage Products</h1>
-          <p className="text-gray-600 mt-1">Review and manage all products on the platform</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Manage Products</h1>
+          <p className="text-sm text-gray-600 mt-1">Review and manage all products on the platform</p>
         </div>
 
-        {/* Status Stats Cards - FIXED: Now properly shows active state */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Status Stats Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
           {stats.map((stat) => {
             const Icon = stat.icon;
             const isActive = statusFilter === stat.value;
@@ -225,27 +299,48 @@ function AdminProducts() {
                   setStatusFilter(stat.value);
                   setPage(1);
                 }}
-                className={`p-4 rounded-xl border-2 transition-all text-left ${
+                className={`p-3 sm:p-4 rounded-xl border-2 transition-all text-left ${
                   isActive 
                     ? 'border-blue-500 bg-blue-50 shadow-md transform scale-105' 
                     : `border-transparent ${stat.color} hover:shadow-md hover:scale-102`
                 }`}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <Icon className={`w-5 h-5 ${isActive ? 'text-blue-600' : ''}`} />
+                <div className="flex items-center justify-between mb-1 sm:mb-2">
+                  <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${isActive ? 'text-blue-600' : ''}`} />
                   {isActive && (
                     <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
                   )}
                 </div>
-                <p className="text-2xl font-bold">{stat.count}</p>
-                <p className="text-sm font-medium">{stat.label}</p>
+                <p className="text-xl sm:text-2xl font-bold">{stat.count}</p>
+                <p className="text-xs sm:text-sm font-medium truncate">{stat.label}</p>
               </button>
             );
           })}
         </div>
 
-        {/* Products Table */}
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
+        {/* Mobile View - Cards */}
+        <div className="lg:hidden space-y-3">
+          {data?.products?.length > 0 ? (
+            data.products.map((product) => (
+              <MobileCard
+                key={product._id}
+                item={product}
+                fields={mobileFields}
+                onCardClick={handleCardClick}
+              />
+            ))
+          ) : (
+            <div className="bg-white rounded-lg p-8 text-center">
+              <Clock className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+              <p className="text-gray-500">
+                No {statusFilter === 'all' ? '' : statusFilter} products found
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop View - Products Table */}
+        <div className="hidden lg:block bg-white rounded-xl shadow-md overflow-hidden">
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div>
@@ -259,21 +354,6 @@ function AdminProducts() {
                   {data?.total || 0} product{data?.total !== 1 ? 's' : ''} found
                 </p>
               </div>
-              
-              {/* Mobile Dropdown Filter */}
-              <select
-                value={statusFilter}
-                onChange={(e) => {
-                  setStatusFilter(e.target.value);
-                  setPage(1);
-                }}
-                className="lg:hidden px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="all">All Products</option>
-                <option value="pending">Pending</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
-              </select>
             </div>
           </div>
 
@@ -312,6 +392,143 @@ function AdminProducts() {
             </div>
           )}
         </div>
+
+        {/* Pagination for Mobile */}
+        {data?.totalPages > 1 && (
+          <div className="lg:hidden">
+            <Pagination
+              currentPage={page}
+              totalPages={data.totalPages}
+              onPageChange={(p) => setPage(p)}
+            />
+          </div>
+        )}
+
+        {/* Detail Modal */}
+        <DetailModal
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          title="Product Details"
+          actions={
+            <>
+              <button
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+              >
+                Close
+              </button>
+              {selectedProduct?.status === 'pending' && (
+                <>
+                  <button
+                    onClick={() => approveMutation.mutate(selectedProduct._id)}
+                    disabled={approveMutation.isPending}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium disabled:opacity-50 flex items-center gap-2"
+                  >
+                    <CheckCircle size={16} />
+                    {approveMutation.isPending ? 'Approving...' : 'Approve'}
+                  </button>
+                  <button
+                    onClick={() => rejectMutation.mutate(selectedProduct._id)}
+                    disabled={rejectMutation.isPending}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium disabled:opacity-50 flex items-center gap-2"
+                  >
+                    <XCircle size={16} />
+                    {rejectMutation.isPending ? 'Rejecting...' : 'Reject'}
+                  </button>
+                </>
+              )}
+            </>
+          }
+        >
+          {selectedProduct && (
+            <>
+              <div className="mb-4">
+                <img
+                  src={selectedProduct.thumbnail || '/placeholder.jpg'}
+                  alt={selectedProduct.title}
+                  className="w-full h-48 object-cover rounded-lg border border-gray-200"
+                />
+              </div>
+              
+              <DetailRow 
+                label="Product ID" 
+                value={selectedProduct._id} 
+              />
+              <DetailRow 
+                label="Title" 
+                value={selectedProduct.title} 
+              />
+              <DetailRow 
+                label="Category" 
+                value={selectedProduct.category || 'N/A'} 
+              />
+              <DetailRow 
+                label="Price" 
+                value={
+                  <div>
+                    <p className="text-lg font-bold text-gray-900">${selectedProduct.price?.toFixed(2) || '0.00'}</p>
+                    {selectedProduct.salePrice && (
+                      <p className="text-sm text-green-600">Sale: ${selectedProduct.salePrice.toFixed(2)}</p>
+                    )}
+                  </div>
+                } 
+              />
+              <DetailRow 
+                label="Vendor" 
+                value={
+                  <div>
+                    <p className="font-medium">{selectedProduct.vendor?.name || 'N/A'}</p>
+                    <p className="text-xs text-gray-500">{selectedProduct.vendor?.email || ''}</p>
+                  </div>
+                } 
+              />
+              <DetailRow 
+                label="Submitted" 
+                value={format(new Date(selectedProduct.createdAt), 'PPpp')} 
+              />
+              <DetailRow 
+                label="Status" 
+                value={
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                      selectedProduct.status === 'approved'
+                        ? 'bg-green-100 text-green-800'
+                        : selectedProduct.status === 'pending'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : 'bg-red-100 text-red-800'
+                    }`}
+                  >
+                    {selectedProduct.status}
+                  </span>
+                } 
+              />
+              {selectedProduct.description && (
+                <DetailRow 
+                  label="Description" 
+                  value={
+                    <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 text-sm">
+                      {selectedProduct.description}
+                    </div>
+                  } 
+                />
+              )}
+              <DetailRow 
+                label="Product Link" 
+                value={
+                  <a
+                    href={`/products/${selectedProduct.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline flex items-center gap-2"
+                  >
+                    <Eye size={14} />
+                    View Product Page
+                  </a>
+                } 
+              />
+            </>
+          )}
+        </DetailModal>
       </div>
     </div>
   );

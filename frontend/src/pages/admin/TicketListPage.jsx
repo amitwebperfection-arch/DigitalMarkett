@@ -23,7 +23,7 @@ function TicketListPage() {
   if (loading) return <div>Loading tickets...</div>;
 
   return (
-    <div className="container-custom py-8">
+    <div className="container-custom py-8 px-0 md:px-4">
       <h1 className="text-2xl font-semibold mb-4">All Support Tickets</h1>
       {tickets.length === 0 && <p>No tickets found.</p>}
 

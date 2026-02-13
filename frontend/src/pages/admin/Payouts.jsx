@@ -121,8 +121,8 @@ function AdminPayouts() {
       key: 'accountDetails',
       label: 'Bank Details',
       render: (row) => (
-        <div className="text-xs space-y-1">
-          <p className="font-medium text-gray-900">
+        <div className="text-xs space-y-0.5 sm:space-y-1">
+          <p className="font-medium text-gray-900 truncate">
             {row.accountDetails?.accountHolderName || '-'}
           </p>
           <p className="text-gray-600">
@@ -211,7 +211,7 @@ function AdminPayouts() {
   /* ================= UI ================= */
   return (
     <>
-      <div className="container-custom py-8 space-y-6">
+      <div className="container-custom py-8 px-0 md:px-4 space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
@@ -221,15 +221,15 @@ function AdminPayouts() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 sm:p-5 md:p-6 rounded-lg">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-blue-700 font-medium mb-1">Total Requests</p>
-                <p className="text-3xl font-bold text-blue-900">{stats.total}</p>
+                <p className="text-xs sm:text-sm font-medium mb-1">Total Requests</p>
+                <p className="text-2xl sm:text-3xl font-bold">{stats.total}</p>
               </div>
-              <div className="bg-blue-200 p-3 rounded-full">
-                <svg className="w-6 h-6 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-blue-200 p-2 sm:p-3 rounded-full">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
@@ -282,8 +282,8 @@ function AdminPayouts() {
         </div>
 
         {/* Filter Tabs */}
-        <div className="bg-white p-4 rounded-lg shadow">
-          <div className="flex gap-2">
+        <div className="bg-white p-3 sm:p-4 rounded-lg shadow">
+          <div className="flex gap-1 sm:gap-2 overflow-x-auto pb-2 sm:pb-0">
             {['all', 'pending', 'completed', 'rejected'].map((status) => (
               <button
                 key={status}
@@ -291,7 +291,7 @@ function AdminPayouts() {
                   setStatusFilter(status);
                   setPage(1);
                 }}
-                className={`px-4 py-2 rounded-lg font-medium text-sm transition ${
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium text-xs sm:text-sm whitespace-nowrap ${
                   statusFilter === status
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'

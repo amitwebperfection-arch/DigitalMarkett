@@ -34,7 +34,7 @@ function VendorEarnings() {
   if (isLoading) return <LoadingSpinner fullScreen />;
 
   return (
-    <div className="container-custom py-8">
+    <div className="container-custom py-8 px-0 md:px-4">
       <h1 className="text-3xl font-bold mb-6">Earnings</h1>
 
       {/* Total Earnings */}

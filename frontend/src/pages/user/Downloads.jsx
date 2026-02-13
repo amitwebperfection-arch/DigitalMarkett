@@ -37,7 +37,7 @@ function UserDownloads() {
   };
 
   return (
-    <div className="container-custom py-8">
+    <div className="container-custom py-8 px-0 md:px-4">
       <h1 className="text-2xl font-bold mb-6">My Downloads</h1>
 
       {downloads.length === 0 ? (

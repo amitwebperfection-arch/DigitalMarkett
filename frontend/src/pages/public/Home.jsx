@@ -163,7 +163,7 @@ function Home() {
 
   if (error) {
     return (
-      <div className="container-custom py-8">
+      <div className="container-custom py-8 px-0 md:px-4">
         <div className="text-center text-red-500">Failed to load categories</div>
       </div>
     );
@@ -247,26 +247,7 @@ function Home() {
         </div>
       </section>
 
-      {/* Stats Section - Enhanced */}
-      <section className="container-custom">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          {stats.map((stat, index) => (
-            <div 
-              key={index} 
-              className="group relative bg-white p-6 md:p-8 rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:-translate-y-2"
-            >
-              {/* Gradient Background on Hover */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 group-hover:opacity-10 transition-opacity`}></div>
-              
-              <div className="relative z-10">
-                <stat.icon className={`w-10 h-10 md:w-12 md:h-12 mx-auto mb-4 transition-all duration-300 bg-gradient-to-br ${stat.color} bg-clip-text text-transparent group-hover:scale-110`} />
-                <div className="text-2xl md:text-4xl font-bold text-gray-900 mb-2">{stat.value}</div>
-                <div className="text-xs md:text-sm text-gray-600 font-medium">{stat.label}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+ 
 
       {/* Features Section - Enhanced with 6 items in 2 rows */}
       <section className="container-custom">
@@ -376,6 +357,27 @@ function Home() {
             ))}
           </div>
         )}
+      </section>
+
+      {/* Stats Section - Enhanced */}
+      <section className="container-custom">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          {stats.map((stat, index) => (
+            <div 
+              key={index} 
+              className="group relative bg-white p-6 md:p-8 rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:-translate-y-2"
+            >
+              {/* Gradient Background on Hover */}
+              <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 group-hover:opacity-10 transition-opacity`}></div>
+              
+              <div className="relative z-10">
+                <stat.icon className={`w-10 h-10 md:w-12 md:h-12 mx-auto mb-4 transition-all duration-300 bg-gradient-to-br ${stat.color} bg-clip-text text-transparent group-hover:scale-110`} />
+                <div className="text-2xl md:text-4xl font-bold text-gray-900 mb-2">{stat.value}</div>
+                <div className="text-xs md:text-sm text-gray-600 font-medium">{stat.label}</div>
+              </div>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* Latest Products - Enhanced */}

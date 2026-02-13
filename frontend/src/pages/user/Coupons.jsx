@@ -23,7 +23,7 @@ export default function UserCoupons({ onApply }) {
   }
 
   return (
-    <div className="container-custom py-8 space-y-6">
+    <div className="container-custom py-8 px-0 md:px-4 space-y-6">
       <h1 className="text-3xl font-bold">Available Coupons</h1>
 
       {data?.length === 0 && (

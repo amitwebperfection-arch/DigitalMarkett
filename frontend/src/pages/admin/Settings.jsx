@@ -65,7 +65,7 @@ useEffect(() => {
   }
 
   return (
-    <div className="container-custom py-8 space-y-6">
+    <div className="container-custom py-8 px-0 md:px-4 space-y-6">
       <h1 className="text-3xl font-bold">Site Settings</h1>
 
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow space-y-4">

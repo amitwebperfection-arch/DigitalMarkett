@@ -85,7 +85,7 @@ function ProductList() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
-      <div className="container-custom py-8 md:py-12 space-y-8">
+      <div className="container-custom py-8 px-0 md:px-4 md:py-12 space-y-8">
         
         {/* Header */}
         <div className="text-center space-y-3">

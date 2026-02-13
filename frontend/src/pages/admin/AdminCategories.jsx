@@ -9,9 +9,12 @@ import {
   Plus,
   X,
   Image as ImageIcon,
-  AlertCircle
+  AlertCircle,
+  Tag
 } from 'lucide-react';
 import { categoryService } from '../../services/category.service';
+import MobileCard from '../../components/common/MobileCard';
+import DetailModal, { DetailRow } from '../../components/common/DetailModal';
 
 const AdminCategories = () => {
   const [categories, setCategories] = useState([]);
@@ -20,10 +23,10 @@ const AdminCategories = () => {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [parentsOnly, setParentsOnly] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [modalMode, setModalMode] = useState('add'); // 'add', 'edit', 'view'
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [modalMode, setModalMode] = useState('add');
   const [currentCategory, setCurrentCategory] = useState(null);
   
-  // Form state
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -34,7 +37,6 @@ const AdminCategories = () => {
   const [iconPreview, setIconPreview] = useState(null);
   const [errors, setErrors] = useState({});
 
-  // Fetch categories
   useEffect(() => {
     fetchCategories();
   }, []);
@@ -51,7 +53,6 @@ const AdminCategories = () => {
     }
   };
 
-  // Handle search
   const filteredCategories = categories.filter(cat => {
     const matchesSearch = cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          cat.description.toLowerCase().includes(searchTerm.toLowerCase());
@@ -59,7 +60,6 @@ const AdminCategories = () => {
     return matchesSearch && matchesParentFilter;
   });
 
-  // Handle select all
   const handleSelectAll = (e) => {
     if (e.target.checked) {
       setSelectedCategories(filteredCategories.map(cat => cat._id));
@@ -68,7 +68,6 @@ const AdminCategories = () => {
     }
   };
 
-  // Handle individual select
   const handleSelectCategory = (categoryId) => {
     setSelectedCategories(prev => 
       prev.includes(categoryId)
@@ -77,17 +76,11 @@ const AdminCategories = () => {
     );
   };
 
-  // Toggle published status
   const handleTogglePublished = async (categoryId, currentStatus) => {
     try {
-      
-      // Create FormData for the update
       const formData = new FormData();
       formData.append('published', (!currentStatus).toString());
-      
       await categoryService.updateCategory(categoryId, formData);
-      
-      // Update local state
       setCategories(prev => prev.map(cat => 
         cat._id === categoryId ? { ...cat, published: !currentStatus } : cat
       ));
@@ -97,7 +90,11 @@ const AdminCategories = () => {
     }
   };
 
-  // Open modal
+  const handleCardClick = (category) => {
+    setCurrentCategory(category);
+    setShowDetailModal(true);
+  };
+
   const openModal = (mode, category = null) => {
     setModalMode(mode);
     setCurrentCategory(category);
@@ -108,7 +105,7 @@ const AdminCategories = () => {
         description: category.description,
         icon: null,
         published: category.published,
-        parent: category.parent?._id || category.parent || null // ✅ Handle both populated and unpopulated
+        parent: category.parent?._id || category.parent || null
       });
       setIconPreview(category.icon);
     } else if (mode === 'add') {
@@ -124,9 +121,9 @@ const AdminCategories = () => {
     
     setErrors({});
     setShowModal(true);
+    setShowDetailModal(false);
   };
 
-  // Close modal
   const closeModal = () => {
     setShowModal(false);
     setCurrentCategory(null);
@@ -134,13 +131,13 @@ const AdminCategories = () => {
       name: '',
       description: '',
       icon: null,
-      published: true
+      published: true,
+      parent: null
     });
     setIconPreview(null);
     setErrors({});
   };
 
-  // Handle icon upload
   const handleIconChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -161,7 +158,6 @@ const AdminCategories = () => {
     }
   };
 
-  // Validate form
   const validateForm = () => {
     const newErrors = {};
     
@@ -183,7 +179,6 @@ const AdminCategories = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Handle submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -195,11 +190,10 @@ const AdminCategories = () => {
       formDataToSend.append('description', formData.description);
       formDataToSend.append('published', formData.published.toString());
       
-      // ✅ ADD: Include parent field
       if (formData.parent) {
         formDataToSend.append('parent', formData.parent);
       } else {
-        formDataToSend.append('parent', ''); // Send empty string for null
+        formDataToSend.append('parent', '');
       }
       
       if (formData.icon) {
@@ -220,22 +214,20 @@ const AdminCategories = () => {
     }
   };
 
-  // Handle delete
   const handleDelete = async (categoryId) => {
     if (!window.confirm('Are you sure you want to delete this category?')) return;
 
     try {
       await categoryService.deleteCategory(categoryId);
-      
       setCategories(prev => prev.filter(cat => cat._id !== categoryId));
       setSelectedCategories(prev => prev.filter(id => id !== categoryId));
+      setShowDetailModal(false);
     } catch (error) {
       console.error('❌ Error deleting category:', error);
       alert(error.response?.data?.message || 'Failed to delete category');
     }
   };
 
-  // Handle bulk delete
   const handleBulkDelete = async () => {
     if (selectedCategories.length === 0) {
       alert('Please select categories to delete');
@@ -246,66 +238,94 @@ const AdminCategories = () => {
 
     try {
       await categoryService.bulkDeleteCategories(selectedCategories);
-      
       fetchCategories();
       setSelectedCategories([]);
-      
     } catch (error) {
       console.error('❌ Error bulk deleting:', error);
       alert(error.response?.data?.message || 'Failed to delete categories');
     }
   };
 
-  // Export categories
-  const handleExport = () => {
-    const dataStr = JSON.stringify(categories, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `categories-${new Date().toISOString()}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
-  };
+  // Mobile card fields
+  const mobileFields = [
+    {
+      label: 'Category',
+      key: 'name',
+      render: (cat) => (
+        <div className="flex items-center gap-3">
+          {cat.icon ? (
+            <img 
+              src={cat.icon} 
+              alt={cat.name} 
+              className="w-12 h-12 rounded-lg object-cover border border-gray-200"
+            />
+          ) : (
+            <div className="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center border border-gray-200">
+              <ImageIcon size={20} className="text-gray-400" />
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              {cat.parent && (
+                <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded font-medium">
+                  Sub
+                </span>
+              )}
+              <span className="font-semibold text-gray-900">{cat.name}</span>
+            </div>
+            {cat.parent && (
+              <p className="text-xs text-gray-500 mt-0.5">
+                Parent: {cat.parent.name || 'Unknown'}
+              </p>
+            )}
+          </div>
+        </div>
+      )
+    },
+    {
+      label: 'Products',
+      key: 'count',
+      render: (cat) => (
+        <span className="text-sm text-gray-600">
+          {cat.count || 0} {cat.count === 1 ? 'product' : 'products'}
+        </span>
+      )
+    },
+    {
+      label: 'Published',
+      key: 'published',
+      render: (cat) => (
+        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+          cat.published ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+        }`}>
+          {cat.published ? 'Yes' : 'No'}
+        </span>
+      )
+    }
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+    <div className="min-h-screen bg-gray-50 p-2 sm:p-4 md:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-          <h1 className="text-3xl font-semibold text-gray-900">Category</h1>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 md:mb-8">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900">Categories</h1>
+            <p className="text-sm text-gray-600 mt-1">{categories.length} total categories</p>
+          </div>
           
-          <div className="flex flex-wrap gap-2">
-            <button 
-              onClick={handleExport}
-              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:shadow-md transition-all duration-200"
-            >
-              <Download size={16} />
-              Export
-            </button>
-            <button className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:shadow-md transition-all duration-200">
-              <Upload size={16} />
-              Import
-            </button>
+          <div className="flex flex-wrap gap-1 sm:gap-2">
             <button 
               onClick={handleBulkDelete}
               disabled={selectedCategories.length === 0}
-              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-orange-400 rounded-lg hover:bg-orange-500 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Edit2 size={16} />
-              Bulk Action
-            </button>
-            <button 
-              onClick={handleBulkDelete}
-              disabled={selectedCategories.length === 0}
-              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 hover:shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Trash2 size={16} />
-              Delete
+              Delete ({selectedCategories.length})
             </button>
             <button 
               onClick={() => openModal('add')}
-              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-emerald-500 rounded-lg hover:bg-emerald-600 hover:shadow-md transition-all duration-200"
+              className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-white bg-emerald-500 rounded-lg hover:bg-emerald-600 transition-all"
             >
               <Plus size={16} />
               Add Category
@@ -313,7 +333,6 @@ const AdminCategories = () => {
           </div>
         </div>
 
-        {/* Error Display */}
         {errors.fetch && (
           <div className="mb-6 flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
             <AlertCircle size={18} />
@@ -322,29 +341,26 @@ const AdminCategories = () => {
         )}
 
         {/* Search and Filter */}
-        <div className="bg-white rounded-lg shadow-sm p-5 mb-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="relative flex-1 max-w-md">
-              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+        <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 md:p-5 mb-4 sm:mb-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
+            <div className="relative flex-1 max-w-full md:max-w-md">
+              <Search size={18} className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search by Category name"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-11 pr-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                className="w-full pl-8 sm:pl-11 pr-3 sm:pr-4 py-2 sm:py-2.5 text-xs sm:text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
               />
             </div>
 
             <div className="flex items-center gap-3">
-              <button className="px-4 py-2 text-sm font-medium text-white bg-emerald-500 rounded-lg hover:bg-emerald-600 transition-colors">
-                Filter
-              </button>
               <button 
                 onClick={() => {
                   setSearchTerm('');
                   setParentsOnly(false);
                 }}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
               >
                 Reset
               </button>
@@ -360,19 +376,58 @@ const AdminCategories = () => {
                   <div className="w-12 h-6 bg-gray-300 rounded-full peer peer-checked:bg-emerald-500 transition-colors"></div>
                   <div className="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full transition-transform peer-checked:translate-x-6"></div>
                 </div>
-                <span className="text-sm font-medium text-gray-700">Parents Only</span>
+                <span className="text-sm font-medium text-gray-700 hidden sm:inline">Parents Only</span>
               </label>
             </div>
           </div>
         </div>
 
-        {/* Table */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        {/* Mobile View - Cards */}
+        <div className="lg:hidden space-y-3 mb-4">
+          {loading ? (
+            <div className="bg-white rounded-lg p-8 text-center">
+              <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            </div>
+          ) : filteredCategories.length === 0 ? (
+            <div className="bg-white rounded-lg p-8 text-center">
+              <Tag className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+              <p className="text-gray-500">No categories found</p>
+            </div>
+          ) : (
+            filteredCategories.map((category) => (
+              <div key={category._id} className="relative">
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSelectCategory(category._id);
+                  }}
+                  className="absolute top-3 left-3 z-10"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedCategories.includes(category._id)}
+                    onChange={() => {}}
+                    className="w-5 h-5 text-emerald-500 border-gray-300 rounded focus:ring-emerald-500"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+                <MobileCard
+                  item={category}
+                  fields={mobileFields}
+                  onCardClick={handleCardClick}
+                />
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop View - Table */}
+        <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[640px]">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-4 py-3 text-left">
+                  <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs">
                     <input
                       type="checkbox"
                       checked={selectedCategories.length === filteredCategories.length && filteredCategories.length > 0}
@@ -380,18 +435,17 @@ const AdminCategories = () => {
                       className="w-4 h-4 text-emerald-500 border-gray-300 rounded focus:ring-emerald-500"
                     />
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ICON</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">NAME</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">DESCRIPTION</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">PUBLISHED</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">ACTIONS</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">ICON</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">NAME</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">DESCRIPTION</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">PUBLISHED</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">ACTIONS</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {loading ? (
                   <tr>
-                    <td colSpan="7" className="px-4 py-8 text-center text-gray-500">
+                    <td colSpan="6" className="px-4 py-8 text-center text-gray-500">
                       <div className="flex items-center justify-center gap-2">
                         <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
                         Loading...
@@ -400,7 +454,7 @@ const AdminCategories = () => {
                   </tr>
                 ) : filteredCategories.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="px-4 py-8 text-center text-gray-500">
+                    <td colSpan="6" className="px-4 py-8 text-center text-gray-500">
                       No categories found
                     </td>
                   </tr>
@@ -414,9 +468,6 @@ const AdminCategories = () => {
                           onChange={() => handleSelectCategory(category._id)}
                           className="w-4 h-4 text-emerald-500 border-gray-300 rounded focus:ring-emerald-500"
                         />
-                      </td>
-                      <td className="px-4 py-4 text-sm font-mono text-gray-600">
-                        {category.id || category._id.slice(-4).toUpperCase()}
                       </td>
                       <td className="px-4 py-4">
                         {category.icon ? (
@@ -433,7 +484,6 @@ const AdminCategories = () => {
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-2">
-                          {/* ✅ Show subcategory badge */}
                           {category.parent && (
                             <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded font-medium">
                               Subcategory
@@ -443,13 +493,11 @@ const AdminCategories = () => {
                             {category.name}
                           </span>
                         </div>
-                        {/* ✅ Show parent name if it's a subcategory */}
                         {category.parent && (
                           <p className="text-xs text-gray-500 mt-1">
                             Parent: {category.parent.name || 'Unknown'}
                           </p>
                         )}
-                        {/* ✅ Show product count */}
                         {category.count !== undefined && (
                           <p className="text-xs text-gray-400 mt-1">
                             {category.count} {category.count === 1 ? 'product' : 'products'}
@@ -474,7 +522,7 @@ const AdminCategories = () => {
                       <td className="px-4 py-4">
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => openModal('view', category)}
+                            onClick={() => handleCardClick(category)}
                             className="p-2 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
                             title="View"
                           >
@@ -504,22 +552,85 @@ const AdminCategories = () => {
           </div>
         </div>
 
-        {/* Modal */}
+        {/* Detail Modal (View/Edit) */}
+        <DetailModal
+          isOpen={showDetailModal}
+          onClose={() => setShowDetailModal(false)}
+          title="Category Details"
+          actions={
+            <>
+              <button
+                onClick={() => setShowDetailModal(false)}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => openModal('edit', currentCategory)}
+                className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-medium flex items-center gap-2"
+              >
+                <Edit2 size={16} />
+                Edit
+              </button>
+              <button
+                onClick={() => handleDelete(currentCategory._id)}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium flex items-center gap-2"
+              >
+                <Trash2 size={16} />
+                Delete
+              </button>
+            </>
+          }
+        >
+          {currentCategory && (
+            <>
+              <div className="mb-4">
+                {currentCategory.icon && (
+                  <img 
+                    src={currentCategory.icon} 
+                    alt={currentCategory.name} 
+                    className="w-24 h-24 rounded-lg object-cover border border-gray-200"
+                  />
+                )}
+              </div>
+              <DetailRow label="ID" value={currentCategory._id} />
+              <DetailRow label="Name" value={currentCategory.name} />
+              <DetailRow 
+                label="Parent Category" 
+                value={currentCategory.parent?.name || 'None (Top Level)'} 
+              />
+              <DetailRow label="Description" value={currentCategory.description} />
+              <DetailRow 
+                label="Published" 
+                value={
+                  <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    currentCategory.published ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {currentCategory.published ? 'Yes' : 'No'}
+                  </span>
+                } 
+              />
+              <DetailRow 
+                label="Product Count" 
+                value={`${currentCategory.count || 0} ${currentCategory.count === 1 ? 'product' : 'products'}`} 
+              />
+            </>
+          )}
+        </DetailModal>
+
+        {/* Add/Edit Form Modal */}
         {showModal && (
           <div 
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn"
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4"
             onClick={closeModal}
           >
             <div 
-              className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl animate-slideUp"
+              className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Modal Header */}
-              <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  {modalMode === 'add' && 'Add New Category'}
-                  {modalMode === 'edit' && 'Edit Category'}
-                  {modalMode === 'view' && 'View Category'}
+              <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+                  {modalMode === 'add' ? 'Add New Category' : 'Edit Category'}
                 </h2>
                 <button
                   onClick={closeModal}
@@ -529,223 +640,147 @@ const AdminCategories = () => {
                 </button>
               </div>
 
-              {/* Modal Body */}
-                {modalMode === 'view' ? (
-                  <div className="p-6 space-y-6">
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">ID:</label>
-                      <p className="text-sm text-gray-900">{currentCategory?.id || currentCategory?._id}</p>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Icon:</label>
-                      {currentCategory?.icon && (
-                        <img 
-                          src={currentCategory.icon} 
-                          alt={currentCategory.name} 
-                          className="w-20 h-20 rounded-lg object-cover border border-gray-200"
-                        />
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Name:</label>
-                      <p className="text-sm text-gray-900">{currentCategory?.name}</p>
-                    </div>
-                    {/* ✅ UPDATED: Show parent category properly */}
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Parent Category:</label>
-                      <p className="text-sm text-gray-900">
-                        {currentCategory?.parent?.name || 'None (Top Level)'}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Description:</label>
-                      <p className="text-sm text-gray-900">{currentCategory?.description}</p>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Published:</label>
-                      <p className="text-sm text-gray-900">{currentCategory?.published ? 'Yes' : 'No'}</p>
-                    </div>
+              <form onSubmit={handleSubmit} className="p-4 sm:p-6">
+                {errors.submit && (
+                  <div className="mb-6 flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
+                    <AlertCircle size={18} />
+                    {errors.submit}
                   </div>
-                ) : (
-                <form onSubmit={handleSubmit} className="p-6">
-                  {errors.submit && (
-                    <div className="mb-6 flex items-center gap-2 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
-                      <AlertCircle size={18} />
-                      {errors.submit}
-                    </div>
-                  )}
+                )}
 
-                  <div className="space-y-5">
-                      <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                          Category Name *
-                        </label>
-                        <input
-                          type="text"
-                          id="name"
-                          value={formData.name}
-                          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                          className={`w-full px-4 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all ${
-                            errors.name 
-                              ? 'border-red-300 focus:ring-red-500' 
-                              : 'border-gray-300 focus:ring-emerald-500 focus:border-transparent'
-                          }`}
-                          placeholder="e.g., Fruits & Vegetable"
-                        />
-                        {errors.name && (
-                          <p className="mt-1.5 text-xs text-red-600">{errors.name}</p>
+                <div className="space-y-4 sm:space-y-5">
+                  <div>
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                      Category Name *
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                      className={`w-full px-4 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                        errors.name 
+                          ? 'border-red-300 focus:ring-red-500' 
+                          : 'border-gray-300 focus:ring-emerald-500 focus:border-transparent'
+                      }`}
+                      placeholder="e.g., Fruits & Vegetable"
+                    />
+                    {errors.name && (
+                      <p className="mt-1.5 text-xs text-red-600">{errors.name}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="parent" className="block text-sm font-medium text-gray-700 mb-2">
+                      Parent Category (Optional)
+                    </label>
+                    <select
+                      id="parent"
+                      value={formData.parent || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, parent: e.target.value || null }))}
+                      className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    >
+                      <option value="">None (Top Level Category)</option>
+                      {categories
+                        .filter(cat => !cat.parent && cat._id !== currentCategory?._id)
+                        .map(cat => (
+                          <option key={cat._id} value={cat._id}>
+                            {cat.name}
+                          </option>
+                        ))
+                      }
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+                      Description *
+                    </label>
+                    <textarea
+                      id="description"
+                      value={formData.description}
+                      onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                      className={`w-full px-4 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all resize-none ${
+                        errors.description 
+                          ? 'border-red-300 focus:ring-red-500' 
+                          : 'border-gray-300 focus:ring-emerald-500 focus:border-transparent'
+                      }`}
+                      placeholder="Brief description of the category"
+                      rows="3"
+                    />
+                    {errors.description && (
+                      <p className="mt-1.5 text-xs text-red-600">{errors.description}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="icon" className="block text-sm font-medium text-gray-700 mb-2">
+                      Category Icon {modalMode === 'add' && '*'}
+                    </label>
+                    <div className="mt-2">
+                      <input
+                        type="file"
+                        id="icon"
+                        accept="image/*"
+                        onChange={handleIconChange}
+                        className="hidden"
+                      />
+                      <label 
+                        htmlFor="icon" 
+                        className="flex items-center justify-center w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 transition-all"
+                      >
+                        {iconPreview ? (
+                          <img 
+                            src={iconPreview} 
+                            alt="Preview" 
+                            className="w-full h-full object-cover rounded-lg"
+                          />
+                        ) : (
+                          <div className="flex flex-col items-center gap-2 text-gray-400">
+                            <ImageIcon size={32} />
+                            <span className="text-xs text-center px-2">Click to upload</span>
+                          </div>
                         )}
-                      </div>
-
-                      {/* ✅ NEW: Parent Category Selection */}
-                      <div>
-                        <label htmlFor="parent" className="block text-sm font-medium text-gray-700 mb-2">
-                          Parent Category (Optional)
-                        </label>
-                        <select
-                          id="parent"
-                          value={formData.parent || ''}
-                          onChange={(e) => setFormData(prev => ({ ...prev, parent: e.target.value || null }))}
-                          className="w-full px-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-                        >
-                          <option value="">None (Top Level Category)</option>
-                          {categories
-                            .filter(cat => !cat.parent && cat._id !== currentCategory?._id) // Only show parent categories, exclude self
-                            .map(cat => (
-                              <option key={cat._id} value={cat._id}>
-                                {cat.name}
-                              </option>
-                            ))
-                          }
-                        </select>
-                        <p className="mt-1.5 text-xs text-gray-500">
-                          Leave empty to create a top-level category
-                        </p>
-                      </div>
-
-                      <div>
-                        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-                          Description *
-                        </label>
-                        <textarea
-                          id="description"
-                          value={formData.description}
-                          onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                          className={`w-full px-4 py-2.5 text-sm border rounded-lg focus:outline-none focus:ring-2 transition-all resize-none ${
-                            errors.description 
-                              ? 'border-red-300 focus:ring-red-500' 
-                              : 'border-gray-300 focus:ring-emerald-500 focus:border-transparent'
-                          }`}
-                          placeholder="Brief description of the category"
-                          rows="3"
-                        />
-                        {errors.description && (
-                          <p className="mt-1.5 text-xs text-red-600">{errors.description}</p>
-                        )}
-                      </div>
-                    <div>
-                      <label htmlFor="icon" className="block text-sm font-medium text-gray-700 mb-2">
-                        Category Icon {modalMode === 'add' && '*'}
-                      </label>
-                      <div className="mt-2">
-                        <input
-                          type="file"
-                          id="icon"
-                          accept="image/*"
-                          onChange={handleIconChange}
-                          className="hidden"
-                        />
-                        <label 
-                          htmlFor="icon" 
-                          className="flex items-center justify-center w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 transition-all"
-                        >
-                          {iconPreview ? (
-                            <img 
-                              src={iconPreview} 
-                              alt="Preview" 
-                              className="w-full h-full object-cover rounded-lg"
-                            />
-                          ) : (
-                            <div className="flex flex-col items-center gap-2 text-gray-400">
-                              <ImageIcon size={32} />
-                              <span className="text-xs text-center px-2">Click to upload icon</span>
-                            </div>
-                          )}
-                        </label>
-                      </div>
-                      {errors.icon && (
-                        <p className="mt-1.5 text-xs text-red-600">{errors.icon}</p>
-                      )}
-                      <p className="mt-1.5 text-xs text-gray-500">
-                        Recommended: 128x128px, PNG or JPG, max 2MB
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="flex items-center gap-3 cursor-pointer select-none">
-                        <input
-                          type="checkbox"
-                          checked={formData.published}
-                          onChange={(e) => setFormData(prev => ({ ...prev, published: e.target.checked }))}
-                          className="w-4 h-4 text-emerald-500 border-gray-300 rounded focus:ring-emerald-500"
-                        />
-                        <span className="text-sm text-gray-700">Published</span>
                       </label>
                     </div>
+                    {errors.icon && (
+                      <p className="mt-1.5 text-xs text-red-600">{errors.icon}</p>
+                    )}
                   </div>
 
-                  {/* Modal Footer */}
-                  <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
-                    <button
-                      type="button"
-                      onClick={closeModal}
-                      className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-5 py-2.5 text-sm font-medium text-white bg-emerald-500 rounded-lg hover:bg-emerald-600 transition-colors"
-                    >
-                      {modalMode === 'add' ? 'Create Category' : 'Update Category'}
-                    </button>
+                  <div>
+                    <label className="flex items-center gap-3 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={formData.published}
+                        onChange={(e) => setFormData(prev => ({ ...prev, published: e.target.checked }))}
+                        className="w-4 h-4 text-emerald-500 border-gray-300 rounded focus:ring-emerald-500"
+                      />
+                      <span className="text-sm text-gray-700">Published</span>
+                    </label>
                   </div>
-                </form>
-              )}
+                </div>
+
+                <div className="flex justify-end gap-3 mt-6 sm:mt-8 pt-6 border-t border-gray-200">
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    className="px-4 sm:px-5 py-2 sm:py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 sm:px-5 py-2 sm:py-2.5 text-sm font-medium text-white bg-emerald-500 rounded-lg hover:bg-emerald-600 transition-colors"
+                  >
+                    {modalMode === 'add' ? 'Create Category' : 'Update Category'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}
       </div>
-
-      <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-
-        @keyframes slideUp {
-          from {
-            transform: translateY(20px);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-
-        .animate-fadeIn {
-          animation: fadeIn 0.2s ease;
-        }
-
-        .animate-slideUp {
-          animation: slideUp 0.3s ease;
-        }
-      `}</style>
     </div>
   );
 };

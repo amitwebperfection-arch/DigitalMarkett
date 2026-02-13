@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/common/Sidebar';
 import Header from '../components/common/Header';
@@ -12,20 +13,29 @@ const vendorMenuItems = [
   { name: 'Reviews', path: '/vendor/reviews', icon: 'Star' },
   // { name: 'Bank Details', path: '/vendor/bank-details', icon: 'CreditCard' },
   { name: 'Profile', path: '/vendor/profile', icon: 'User' },
-  {name: 'Support Tickets', path: '/vendor/tickets', icon: 'MessageSquare' }
+  { name: 'Support Tickets', path: '/vendor/tickets', icon: 'MessageSquare' }
 ];
 
 function VendorLayout() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <Sidebar menuItems={vendorMenuItems} />
+      <Sidebar
+        menuItems={vendorMenuItems}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
 
       {/* Main Content */}
-      <div className="flex flex-col flex-1">
-        <Header title="Vendor Dashboard" />
+      <div className="flex flex-col flex-1 lg:ml-64">
+        <Header
+          title="Vendor Dashboard"
+          onMenuClick={() => setSidebarOpen(true)}
+        />
 
-        <main className="flex-1 p-6 ml-64">
+        <main className="flex-1 p-4 md:p-6">
           <Outlet />
         </main>
       </div>

@@ -27,7 +27,7 @@ function Table({ columns, data, isLoading }) {
             {columns.map((column) => (
               <th
                 key={column.key}
-                className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase"
+                className="px-3 md:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase whitespace-nowrap"
               >
                 {column.label}
               </th>
@@ -45,7 +45,7 @@ function Table({ columns, data, isLoading }) {
               {columns.map((column) => (
                 <td
                   key={column.key}
-                  className="px-6 py-4 text-sm text-gray-700"
+                  className="px-3 md:px-6 py-4 text-sm text-gray-700"
                 >
                   {column.render
                     ? column.render(row)

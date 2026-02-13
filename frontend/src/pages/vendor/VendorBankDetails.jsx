@@ -80,7 +80,7 @@ function VendorBankDetails() {
 
   /* ================= UI ================= */
   return (
-    <div className="container-custom py-8">
+    <div className="container-custom py-8 px-0 md:px-4">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">Bank Details</h1>
 

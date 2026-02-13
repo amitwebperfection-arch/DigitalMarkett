@@ -108,7 +108,7 @@ function VendorDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container-custom py-8 space-y-8">
+      <div className="container-custom py-8 px-0 md:px-4 space-y-8">
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
@@ -312,7 +312,7 @@ function VendorDashboard() {
                     )}
 
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-900 truncate">
+                      <p className="font-semibold text-gray-900">
                         {product.title}
                       </p>
                       <div className="flex items-center gap-3 mt-1">

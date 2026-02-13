@@ -88,7 +88,7 @@ function UserProfile() {
   };
 
   return (
-    <div className="container-custom py-8">
+    <div className="container-custom py-8 px-0 md:px-4">
       <h1 className="text-2xl font-bold mb-6">My Profile</h1>
 
       {/* Profile Information Form */}

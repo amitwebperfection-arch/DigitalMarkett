@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/common/Sidebar';
 import Header from '../components/common/Header';
@@ -13,20 +14,29 @@ const adminMenuItems = [
   { name: 'Contact Messages', path: '/admin/contact-messages', icon: 'Mail' },
   { name: 'Payouts', path: '/admin/payouts', icon: 'DollarSign' },
   { name: 'Settings', path: '/admin/settings', icon: 'Settings' },
-  {name: 'Support Tickets', path: '/admin/tickets', icon: 'MessageSquare' }
+  { name: 'Support Tickets', path: '/admin/tickets', icon: 'MessageSquare' }
 ];
 
 function AdminLayout() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <Sidebar menuItems={adminMenuItems} />
+      <Sidebar
+        menuItems={adminMenuItems}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
 
       {/* Main content */}
-      <div className="flex flex-col flex-1">
-        <Header title="Admin Dashboard" />
+      <div className="flex flex-col flex-1 lg:ml-64">
+        <Header
+          title="Admin Dashboard"
+          onMenuClick={() => setSidebarOpen(true)}
+        />
 
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-4 md:p-6">
           <Outlet />
         </main>
       </div>

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/common/Sidebar';
 import Header from '../components/common/Header';
@@ -14,16 +15,25 @@ const userMenuItems = [
 ];
 
 function UserLayout() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <Sidebar menuItems={userMenuItems} />
+      <Sidebar
+        menuItems={userMenuItems}
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
 
       {/* Main Content */}
-      <div className="flex flex-col flex-1">
-        <Header title="User Dashboard" />
+      <div className="flex flex-col flex-1 lg:ml-64">
+        <Header
+          title="User Dashboard"
+          onMenuClick={() => setSidebarOpen(true)}
+        />
 
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-4 md:p-6">
           <Outlet />
         </main>
       </div>

@@ -43,7 +43,7 @@ function AdminTicketDetailPage() {
   if (loading) return <div>Loading ticket...</div>;
 
   return (
-    <div className="container-custom py-8">
+    <div className="container-custom py-8 px-0 md:px-4">
       <h1 className="text-2xl font-semibold mb-4">{ticket.subject}</h1>
       <p className="mb-6 text-gray-600">{ticket.category}</p>
 

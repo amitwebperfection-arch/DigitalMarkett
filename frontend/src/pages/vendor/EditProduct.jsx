@@ -17,7 +17,6 @@ function EditProduct() {
   const [additionalImages, setAdditionalImages] = useState([]);
   const [productFiles, setProductFiles] = useState([]);
 
-  // ✅ Fetch categories
   const { data: categoryData, isLoading: categoryLoading } = useQuery({
     queryKey: ['categories'],
     queryFn: () => categoryService.getCategories(),
@@ -43,7 +42,6 @@ function EditProduct() {
     { version: '1.0.0', date: new Date().toISOString().split('T')[0], changes: ['Initial release'] }
   ]);
 
-  // Fetch product data
   const { data: productData, isLoading: isLoadingProduct } = useQuery({
     queryKey: ['product', id],
     queryFn: async () => {
@@ -53,7 +51,6 @@ function EditProduct() {
     enabled: !!id
   });
 
-  // Populate form when product data loads
   useEffect(() => {
     if (productData) {
       setFormData({
@@ -72,19 +69,16 @@ function EditProduct() {
         featured: productData.featured || false
       });
 
-      // Set preview for existing thumbnail
       if (productData.thumbnail) {
         setPreview(productData.thumbnail);
       }
 
-      // Set changelog
       if (productData.changelog && productData.changelog.length > 0) {
         setChangelog(productData.changelog);
       }
     }
   }, [productData]);
 
-  // Update mutation
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => productService.updateProduct(id, data),
     onSuccess: () => {
@@ -105,7 +99,6 @@ function EditProduct() {
     }));
   };
 
-  // ✅ FIXED: Thumbnail handling with logging
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -131,7 +124,6 @@ function EditProduct() {
     setPreview(productData?.thumbnail || null);
   };
 
-  // Additional images handling
   const handleAdditionalImages = (e) => {
     const files = Array.from(e.target.files);
     const validFiles = files.filter(file => {
@@ -153,7 +145,6 @@ function EditProduct() {
     setAdditionalImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  // ✅ FIXED: Better file validation (same as AddProduct)
   const handleProductFiles = (e) => {
     const files = Array.from(e.target.files);
     const validFiles = files.filter(file => {
@@ -175,7 +166,7 @@ function EditProduct() {
         return false;
       }
       
-      if (file.size > 100 * 1024 * 1024) { // 100MB limit
+      if (file.size > 100 * 1024 * 1024) {
         toast.error(`${file.name} exceeds 100MB limit`);
         return false;
       }
@@ -190,7 +181,6 @@ function EditProduct() {
     setProductFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Changelog handling
   const addChangelogEntry = () => {
     setChangelog(prev => [...prev, { 
       version: '', 
@@ -241,7 +231,6 @@ function EditProduct() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Validation
     if (!formData.title || !formData.description || !formData.price) {
       toast.error('Please fill required fields');
       return;
@@ -252,29 +241,24 @@ function EditProduct() {
       return;
     }
 
-    // Create FormData
     const data = new FormData();
 
-    // Thumbnail
     if (thumbnail) {
       data.append('thumbnail', thumbnail, thumbnail.name);
     }
 
-    // Additional Images
     if (additionalImages.length > 0) {
       additionalImages.forEach((img) => {
         data.append('images', img, img.name);
       });
     }
 
-    // Product Files
     if (productFiles.length > 0) {
       productFiles.forEach((file) => {
         data.append('files', file, file.name);
       });
     }
 
-    // Text fields
     data.append('title', formData.title);
     data.append('description', formData.description);
     data.append('shortDescription', formData.shortDescription);
@@ -283,13 +267,11 @@ function EditProduct() {
     data.append('version', formData.version);
     data.append('featured', formData.featured);
 
-    // Optional fields
     if (formData.salePrice) data.append('salePrice', formData.salePrice);
     if (formData.demoUrl) data.append('demoUrl', formData.demoUrl);
     if (formData.documentation) data.append('documentation', formData.documentation);
     if (formData.requirements) data.append('requirements', formData.requirements);
 
-    // Tags
     if (formData.tags) {
       formData.tags
         .split(',')
@@ -298,7 +280,6 @@ function EditProduct() {
         .forEach(tag => data.append('tags', tag));
     }
 
-    // Compatible With
     if (formData.compatibleWith) {
       formData.compatibleWith
         .split(',')
@@ -307,10 +288,8 @@ function EditProduct() {
         .forEach(item => data.append('compatibleWith', item));
     }
 
-    // Changelog
     data.append('changelog', JSON.stringify(changelog));
 
-    // Submit
     updateMutation.mutate({ id, data });
   };
 
@@ -324,10 +303,10 @@ function EditProduct() {
 
   if (!productData) {
     return (
-      <div className="container-custom py-8">
+      <div className="py-4 px-4">
         <div className="text-center">
-          <p className="text-red-500">Product not found</p>
-          <button onClick={() => navigate('/vendor/products')} className="btn-primary mt-4">
+          <p className="text-red-500 mb-4">Product not found</p>
+          <button onClick={() => navigate('/vendor/products')} className="btn-primary">
             Back to Products
           </button>
         </div>
@@ -336,65 +315,64 @@ function EditProduct() {
   }
 
   return (
-    <div className="container-custom py-8">
+    <div className="py-2 px-2 sm:py-4 sm:px-4 md:py-8">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Edit Product</h1>
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-3 sm:mb-4 md:mb-6">Edit Product</h1>
 
-        <form onSubmit={handleSubmit} className="space-y-8 bg-white p-8 rounded-lg shadow">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6 md:space-y-8 bg-white p-3 sm:p-4 md:p-8 rounded-lg shadow">
           
-          {/* ========== THUMBNAIL ========== */}
+          {/* THUMBNAIL */}
           <div>
-            <label className="block font-medium mb-2">Product Thumbnail *</label>
+            <label className="block font-medium mb-2 text-sm sm:text-base">Product Thumbnail *</label>
             {preview ? (
-              <div className="relative w-full h-64 rounded-lg overflow-hidden border-2 border-gray-300">
+              <div className="relative w-full h-48 sm:h-56 md:h-64 rounded-lg overflow-hidden border-2 border-gray-300">
                 <img src={preview} alt="Preview" className="w-full h-full object-cover" />
                 <button
                   type="button"
                   onClick={removeImage}
-                  className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600"
+                  className="absolute top-2 right-2 bg-red-500 text-white p-1.5 sm:p-2 rounded-full hover:bg-red-600"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
                 {thumbnail && (
                   <span className="absolute bottom-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">
-                    New thumbnail selected
+                    New thumbnail
                   </span>
                 )}
               </div>
             ) : (
-              <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary-500 transition">
-                <Upload className="w-12 h-12 text-gray-400 mb-2" />
-                <span className="text-gray-500">Click to upload thumbnail</span>
+              <label className="flex flex-col items-center justify-center w-full h-48 sm:h-56 md:h-64 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-primary-500 transition">
+                <Upload className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-gray-400 mb-2" />
+                <span className="text-gray-500 text-sm sm:text-base">Click to upload</span>
                 <span className="text-xs text-gray-400 mt-1">PNG, JPG up to 5MB</span>
                 <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
               </label>
             )}
             <p className="text-xs text-gray-500 mt-2">
-              {thumbnail ? 'New thumbnail will replace the current one' : 'Leave empty to keep existing thumbnail'}
+              {thumbnail ? 'New thumbnail will replace current' : 'Leave empty to keep existing'}
             </p>
           </div>
 
-          {/* ========== EXISTING IMAGES INFO ========== */}
+          {/* EXISTING IMAGES INFO */}
           {productData?.images?.length > 0 && (
-            <div className="bg-blue-50 border border-blue-200 p-4 rounded">
-              <p className="text-sm text-blue-800">
-                <strong>Current Gallery:</strong> {productData.images.length} image(s) are saved. 
-                New images you upload will be added to the gallery.
+            <div className="bg-blue-50 border border-blue-200 p-3 sm:p-4 rounded text-sm">
+              <p className="text-blue-800">
+                <strong>Current Gallery:</strong> {productData.images.length} image(s) saved. 
+                New images will be added.
               </p>
             </div>
           )}
 
-          {/* ========== ADDITIONAL IMAGES ========== */}
+          {/* ADDITIONAL IMAGES */}
           <div>
-            <label className="block font-medium mb-2">Add More Images to Gallery</label>
+            <label className="block font-medium mb-2 text-sm sm:text-base">Add Gallery Images</label>
             
-            {/* New Images to Upload */}
             {additionalImages.length > 0 && (
-              <div className="mb-4">
-                <p className="text-sm text-gray-600 mb-2">New Images (will be added)</p>
-                <div className="flex flex-wrap gap-4">
+              <div className="mb-3 sm:mb-4">
+                <p className="text-xs sm:text-sm text-gray-600 mb-2">New Images (will be added)</p>
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
                   {additionalImages.map((img, idx) => (
-                    <div key={idx} className="relative w-32 h-32">
+                    <div key={idx} className="relative aspect-square">
                       <img 
                         src={URL.createObjectURL(img)} 
                         alt={`Preview ${idx}`} 
@@ -403,9 +381,9 @@ function EditProduct() {
                       <button
                         type="button"
                         onClick={() => removeAdditionalImage(idx)}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full"
+                        className="absolute -top-1 -right-1 bg-red-500 text-white p-0.5 sm:p-1 rounded-full"
                       >
-                        <X className="w-4 h-4" />
+                        <X className="w-3 h-3 sm:w-4 sm:h-4" />
                       </button>
                     </div>
                   ))}
@@ -413,8 +391,8 @@ function EditProduct() {
               </div>
             )}
 
-            <label className="btn-secondary cursor-pointer inline-flex items-center gap-2">
-              <Plus className="w-4 h-4" />
+            <label className="btn-secondary cursor-pointer inline-flex items-center gap-2 text-sm sm:text-base">
+              <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
               Add Images
               <input
                 type="file"
@@ -426,44 +404,43 @@ function EditProduct() {
             </label>
           </div>
 
-          {/* ========== EXISTING FILES INFO ========== */}
+          {/* EXISTING FILES INFO */}
           {productData?.files?.length > 0 && (
-            <div className="bg-blue-50 border border-blue-200 p-4 rounded">
+            <div className="bg-blue-50 border border-blue-200 p-3 sm:p-4 rounded">
               <p className="text-sm text-blue-800 mb-2">
                 <strong>Current Files:</strong>
               </p>
-              <div className="space-y-1">
+              <div className="space-y-1 text-xs sm:text-sm">
                 {productData.files.map((file, idx) => (
-                  <div key={idx} className="text-sm text-blue-700">
+                  <div key={idx} className="text-blue-700 truncate">
                     • {file.name} ({(file.size / 1024 / 1024).toFixed(2)} MB)
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-blue-600 mt-2">New files you upload will be added to this list.</p>
+              <p className="text-xs text-blue-600 mt-2">New files will be added.</p>
             </div>
           )}
 
-          {/* ========== PRODUCT FILES ========== */}
+          {/* PRODUCT FILES */}
           <div>
-            <label className="block font-medium mb-2">Add More Product Files (ZIP, PDF, RAR)</label>
+            <label className="block font-medium mb-2 text-sm sm:text-base">Add Product Files</label>
             
-            {/* New Files to Upload */}
             {productFiles.length > 0 && (
-              <div className="mb-4">
-                <p className="text-sm text-gray-600 mb-2">New Files (will be added)</p>
+              <div className="mb-3 sm:mb-4">
+                <p className="text-xs sm:text-sm text-gray-600 mb-2">New Files (will be added)</p>
                 <div className="space-y-2">
                   {productFiles.map((file, idx) => (
-                    <div key={idx} className="flex items-center justify-between bg-blue-50 p-3 rounded border border-blue-200">
-                      <div className="flex-1">
-                        <span className="text-sm font-medium">{file.name}</span>
-                        <span className="text-xs text-gray-500 ml-2">
+                    <div key={idx} className="flex items-center justify-between bg-blue-50 p-2 sm:p-3 rounded border border-blue-200 text-sm">
+                      <div className="flex-1 min-w-0">
+                        <span className="font-medium truncate block">{file.name}</span>
+                        <span className="text-xs text-gray-500">
                           ({(file.size / 1024 / 1024).toFixed(2)} MB)
                         </span>
                       </div>
                       <button
                         type="button"
                         onClick={() => removeProductFile(idx)}
-                        className="text-red-500 hover:text-red-700"
+                        className="text-red-500 hover:text-red-700 ml-2"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -473,215 +450,210 @@ function EditProduct() {
               </div>
             )}
 
-            <label className="btn-secondary cursor-pointer inline-flex items-center gap-2">
-              <Plus className="w-4 h-4" />
+            <label className="btn-secondary cursor-pointer inline-flex items-center gap-2 text-sm sm:text-base">
+              <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
               Add Files
               <input
                 type="file"
                 multiple
-                accept=".zip,.pdf,.rar,application/zip,application/pdf,application/x-rar-compressed"
+                accept=".zip,.pdf,.rar"
                 onChange={handleProductFiles}
                 className="hidden"
               />
             </label>
-            <p className="text-xs text-gray-500 mt-2">Accepted: ZIP, PDF, RAR (Max 100MB per file)</p>
+            <p className="text-xs text-gray-500 mt-2">ZIP, PDF, RAR (Max 100MB)</p>
           </div>
 
-          {/* ========== BASIC INFO ========== */}
-          <div className="grid grid-cols-1 gap-6">
+          {/* BASIC INFO */}
+          <div className="space-y-4 sm:space-y-6">
             <div>
-              <label className="block font-medium mb-2">Product Title *</label>
+              <label className="block font-medium mb-2 text-sm sm:text-base">Product Title *</label>
               <input
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
                 placeholder="Enter product title"
-                className="input w-full"
+                className="input w-full text-sm sm:text-base"
                 required
               />
             </div>
 
             <div>
-              <label className="block font-medium mb-2">Short Description</label>
+              <label className="block font-medium mb-2 text-sm sm:text-base">Short Description</label>
               <input
                 name="shortDescription"
                 value={formData.shortDescription}
                 onChange={handleChange}
-                placeholder="A brief one-line description"
-                className="input w-full"
+                placeholder="Brief description"
+                className="input w-full text-sm sm:text-base"
                 maxLength={300}
               />
             </div>
 
             <div>
-              <label className="block font-medium mb-2">Full Description *</label>
+              <label className="block font-medium mb-2 text-sm sm:text-base">Full Description *</label>
               <textarea
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
-                placeholder="Detailed product description"
-                className="input w-full h-40"
+                placeholder="Detailed description"
+                className="input w-full h-32 sm:h-36 md:h-40 text-sm sm:text-base"
                 required
               />
             </div>
           </div>
 
-          {/* ========== PRICING ========== */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* PRICING */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
-              <label className="block font-medium mb-2">Regular Price ($) *</label>
+              <label className="block font-medium mb-2 text-sm sm:text-base">Regular Price ($) *</label>
               <input
                 type="number"
                 name="price"
                 value={formData.price}
                 onChange={handleChange}
                 placeholder="0.00"
-                className="input w-full"
+                className="input w-full text-sm sm:text-base"
                 step="0.01"
                 min="0"
                 required
               />
             </div>
             <div>
-              <label className="block font-medium mb-2">Sale Price ($)</label>
+              <label className="block font-medium mb-2 text-sm sm:text-base">Sale Price ($)</label>
               <input
                 type="number"
                 name="salePrice"
                 value={formData.salePrice}
                 onChange={handleChange}
                 placeholder="0.00"
-                className="input w-full"
+                className="input w-full text-sm sm:text-base"
                 step="0.01"
                 min="0"
               />
             </div>
           </div>
 
-          {/* ========== CATEGORY & VERSION ========== */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-  <CategoryDropdown
-  categories={categoryData?.categories || []}
-  value={formData.category}
-  onChange={handleChange}
-/>
-  <p className="text-xs text-gray-500 mt-1">
-    Categories with subcategories are grouped together
-  </p>
-</div>
-
+          {/* CATEGORY & VERSION */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <CategoryDropdown
+              categories={categoryData?.categories || []}
+              value={formData.category}
+              onChange={handleChange}
+            />
             
             <div>
-              <label className="block font-medium mb-2">Version</label>
+              <label className="block font-medium mb-2 text-sm sm:text-base">Version</label>
               <input
                 type="text"
                 name="version"
                 value={formData.version}
                 onChange={handleChange}
-                className="input w-full"
+                className="input w-full text-sm sm:text-base"
                 placeholder="1.0.0"
               />
             </div>
           </div>
-          {/* ========== TAGS & COMPATIBLE WITH ========== */}
-          <div className="grid grid-cols-2 gap-4">
+
+          {/* TAGS & COMPATIBLE */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
-              <label className="block font-medium mb-2">Tags (comma separated)</label>
+              <label className="block font-medium mb-2 text-sm sm:text-base">Tags</label>
               <input
                 name="tags"
                 value={formData.tags}
                 onChange={handleChange}
-                placeholder="wordpress, theme, responsive"
-                className="input w-full"
+                placeholder="wordpress, theme"
+                className="input w-full text-sm sm:text-base"
               />
             </div>
             <div>
-              <label className="block font-medium mb-2">Compatible With (comma separated)</label>
+              <label className="block font-medium mb-2 text-sm sm:text-base">Compatible With</label>
               <input
                 name="compatibleWith"
                 value={formData.compatibleWith}
                 onChange={handleChange}
-                placeholder="WordPress 6.0, WooCommerce 8.0"
-                className="input w-full"
+                placeholder="WordPress 6.0"
+                className="input w-full text-sm sm:text-base"
               />
             </div>
           </div>
 
-          {/* ========== URLS ========== */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* URLS */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
-              <label className="block font-medium mb-2">Demo URL</label>
+              <label className="block font-medium mb-2 text-sm sm:text-base">Demo URL</label>
               <input
                 type="url"
                 name="demoUrl"
                 value={formData.demoUrl}
                 onChange={handleChange}
-                placeholder="https://demo.example.com"
-                className="input w-full"
+                placeholder="https://demo.com"
+                className="input w-full text-sm sm:text-base"
               />
             </div>
             <div>
-              <label className="block font-medium mb-2">Documentation URL</label>
+              <label className="block font-medium mb-2 text-sm sm:text-base">Documentation URL</label>
               <input
                 type="url"
                 name="documentation"
                 value={formData.documentation}
                 onChange={handleChange}
-                placeholder="https://docs.example.com"
-                className="input w-full"
+                placeholder="https://docs.com"
+                className="input w-full text-sm sm:text-base"
               />
             </div>
           </div>
 
-          {/* ========== REQUIREMENTS ========== */}
+          {/* REQUIREMENTS */}
           <div>
-            <label className="block font-medium mb-2">Requirements</label>
+            <label className="block font-medium mb-2 text-sm sm:text-base">Requirements</label>
             <textarea
               name="requirements"
               value={formData.requirements}
               onChange={handleChange}
-              placeholder="System requirements, dependencies, etc."
-              className="input w-full h-24"
+              placeholder="System requirements"
+              className="input w-full h-20 sm:h-24 text-sm sm:text-base"
             />
           </div>
 
-          {/* ========== CHANGELOG ========== */}
+          {/* CHANGELOG */}
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <label className="block font-medium">Changelog</label>
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <label className="block font-medium text-sm sm:text-base">Changelog</label>
               <button
                 type="button"
                 onClick={addChangelogEntry}
-                className="btn-secondary text-sm flex items-center gap-1"
+                className="btn-secondary text-xs sm:text-sm flex items-center gap-1"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                 Add Version
               </button>
             </div>
             
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               {changelog.map((entry, entryIdx) => (
-                <div key={entryIdx} className="border p-4 rounded-lg">
-                  <div className="flex gap-4 mb-3">
+                <div key={entryIdx} className="border p-3 sm:p-4 rounded-lg">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 mb-3">
                     <input
                       type="text"
-                      placeholder="Version (e.g., 1.0.1)"
+                      placeholder="Version"
                       value={entry.version}
                       onChange={(e) => updateChangelogEntry(entryIdx, 'version', e.target.value)}
-                      className="input flex-1"
+                      className="input flex-1 text-sm sm:text-base"
                     />
                     <input
                       type="date"
                       value={entry.date}
                       onChange={(e) => updateChangelogEntry(entryIdx, 'date', e.target.value)}
-                      className="input"
+                      className="input text-sm sm:text-base"
                     />
                     <button
                       type="button"
                       onClick={() => removeChangelogEntry(entryIdx)}
-                      className="text-red-500"
+                      className="text-red-500 self-center sm:self-auto"
                     >
-                      <Trash2 className="w-5 h-5" />
+                      <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
                     </button>
                   </div>
 
@@ -690,26 +662,26 @@ function EditProduct() {
                       <div key={changeIdx} className="flex gap-2">
                         <input
                           type="text"
-                          placeholder="Change description"
+                          placeholder="Change"
                           value={change}
                           onChange={(e) => updateChangelogChange(entryIdx, changeIdx, e.target.value)}
-                          className="input flex-1"
+                          className="input flex-1 text-sm sm:text-base"
                         />
                         <button
                           type="button"
                           onClick={() => removeChangelogChange(entryIdx, changeIdx)}
                           className="text-red-500"
                         >
-                          <X className="w-5 h-5" />
+                          <X className="w-4 h-4 sm:w-5 sm:h-5" />
                         </button>
                       </div>
                     ))}
                     <button
                       type="button"
                       onClick={() => addChangelogChange(entryIdx)}
-                      className="text-primary-600 text-sm flex items-center gap-1"
+                      className="text-primary-600 text-xs sm:text-sm flex items-center gap-1"
                     >
-                      <Plus className="w-4 h-4" />
+                      <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                       Add Change
                     </button>
                   </div>
@@ -718,7 +690,7 @@ function EditProduct() {
             </div>
           </div>
 
-          {/* ========== FEATURED ========== */}
+          {/* FEATURED */}
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
@@ -727,14 +699,14 @@ function EditProduct() {
               onChange={handleChange}
               className="w-4 h-4"
             />
-            <label className="font-medium">Mark as Featured</label>
+            <label className="font-medium text-sm sm:text-base">Mark as Featured</label>
           </div>
 
-          {/* ========== SUBMIT ========== */}
-          <div className="flex space-x-4 pt-4 border-t">
+          {/* SUBMIT */}
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 border-t">
             <button
               type="submit"
-              className="btn-primary flex-1"
+              className="btn-primary flex-1 text-sm sm:text-base"
               disabled={updateMutation.isPending}
             >
               {updateMutation.isPending ? 'Updating...' : 'Update Product'}
@@ -742,7 +714,7 @@ function EditProduct() {
             <button
               type="button"
               onClick={() => navigate('/vendor/products')}
-              className="btn-secondary"
+              className="btn-secondary text-sm sm:text-base"
             >
               Cancel
             </button>

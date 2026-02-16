@@ -56,7 +56,7 @@ const HeroSection = () => {
         }}></div>
       </div>
 
-      <div className="container-custom relative z-10 py-12 md:py-16">
+      <div className="container-custom relative py-12 md:py-16">
         <div className="grid lg:grid-cols-12 gap-8 items-center">
           
           {/* Left Sidebar - Categories */}

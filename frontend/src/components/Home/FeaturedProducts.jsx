@@ -8,7 +8,7 @@ import LoadingSpinner from '../../components/common/LoadingSpinner';
 const FeaturedProducts = () => {
   const { data, isLoading } = useQuery({
     queryKey: ['featured-products'],
-    queryFn: () => productService.getProducts({ featured: true, limit: 8 }),
+    queryFn: () => productService.getProducts({ featured: true, limit: 4 }),
   });
 
   if (isLoading) {

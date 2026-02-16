@@ -88,6 +88,7 @@ export const createOrder = async (
 
   const total = subtotal - discount;
 
+  // After order creation
   const order = await Order.create({
     user: userId,
     items: orderItems,
@@ -114,6 +115,15 @@ export const createOrder = async (
     status: 'pending',
     paymentStatus: 'pending'
   });
+
+  // ✅ Increment salesCount for each product in the order
+  for (const item of orderItems) {
+    const product = await Product.findById(item.product);
+    if (product) {
+      product.salesCount += 1; // for digital downloads, quantity is 1
+      await product.save();
+    }
+  }
 
   return order;
 };

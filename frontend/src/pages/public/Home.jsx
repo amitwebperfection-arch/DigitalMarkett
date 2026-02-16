@@ -32,7 +32,7 @@ function Home() {
         title="Latest Arrivals"
         subtitle="Recently added products"
         queryKey="latest-products"
-        queryParams={{ sort: '-createdAt', limit: 8 }}
+        queryParams={{ sort: '-createdAt', limit: 4 }}
         viewAllLink="/products?sort=-createdAt"
         icon={Clock}
         gradientColors="from-blue-500 to-cyan-500"
@@ -44,7 +44,7 @@ function Home() {
         title="Best Sellers"
         subtitle="Most popular this month"
         queryKey="bestseller-products"
-        queryParams={{ sort: '-salesCount', limit: 8 }}
+        queryParams={{ sort: '-salesCount', limit: 4 }}
         viewAllLink="/products?sort=-salesCount"
         icon={TrendingUp}
         gradientColors="from-orange-500 to-red-500"

@@ -86,7 +86,10 @@ const productSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  // ✅ FIXED: Make rating always present and default to 0
+  salesCount: {
+    type: Number,
+    default: 0
+  },
   rating: {
     average: {
       type: Number,

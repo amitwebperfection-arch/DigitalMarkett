@@ -70,7 +70,7 @@ export const createProduct = async (productData, vendorId) => {
 };
 
 export const getProducts = async (filters = {}, page = 1, limit = 12) => {
-  const { category, search, minPrice, maxPrice, featured, status, vendor, published } = filters;
+  const { category, search, minPrice, maxPrice, featured, status, vendor, published, sort } = filters;
 
   const query = {};
 
@@ -106,13 +106,24 @@ export const getProducts = async (filters = {}, page = 1, limit = 12) => {
     query.published = true;
   }
 
-  const products = await Product.find(query)
-    .select('+rating')
-    .populate('vendor', 'name email vendorInfo.businessName')
-    .sort({ createdAt: -1 })
-    .skip((page - 1) * limit)
-    .limit(limit)
-    .lean();
+let sortOption = { createdAt: -1 }; // default latest
+
+if (sort) {
+  if (sort.startsWith('-')) {
+    sortOption = { [sort.substring(1)]: -1 };
+  } else {
+    sortOption = { [sort]: 1 };
+  }
+}
+
+const products = await Product.find(query)
+  .select('+rating')
+  .populate('vendor', 'name email vendorInfo.businessName')
+  .sort(sortOption)
+  .skip((page - 1) * limit)
+  .limit(limit)
+  .lean();
+
 
   const productsWithRating = products.map(product => ({
     ...product,

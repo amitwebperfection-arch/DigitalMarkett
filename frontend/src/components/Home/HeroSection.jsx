@@ -1,13 +1,50 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, TrendingUp, ChevronRight } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { ArrowRight, TrendingUp, ChevronRight, ChevronLeft } from 'lucide-react';
+import { categoryService } from '../../services/category.service';
+import { useState, useEffect } from 'react';
 
 const HeroSection = () => {
-  const categories = [
-    { name: 'Web Templates', image: '/api/placeholder/150/150', link: '/products?category=web-templates' },
-    { name: 'Mobile Apps', image: '/api/placeholder/150/150', link: '/products?category=mobile-apps' },
-    { name: 'Graphics', image: '/api/placeholder/150/150', link: '/products?category=graphics' },
-    { name: 'UI Kits', image: '/api/placeholder/150/150', link: '/products?category=ui-kits' },
-  ];
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Fetch categories from API
+  const { data: categoriesData } = useQuery({
+    queryKey: ['hero-categories'],
+    queryFn: categoryService.getCategories,
+  });
+
+  // Get published categories and limit to first 6
+  const categories = categoriesData?.categories?.filter(cat => cat.published)?.slice(0, 6) || [];
+
+  // Detect mobile screen
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Auto-slide for mobile
+  useEffect(() => {
+    if (!isMobile || categories.length === 0) return;
+    
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % categories.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [isMobile, categories.length]);
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % categories.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + categories.length) % categories.length);
+  };
 
   return (
     <section className="relative bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white overflow-hidden">
@@ -27,14 +64,22 @@ const HeroSection = () => {
             <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 border border-white/20">
               <h3 className="font-bold text-sm mb-3 text-white/90">Browse Categories</h3>
               <div className="space-y-2">
-                {categories.map((cat, idx) => (
+                {categories.map((cat) => (
                   <Link
-                    key={idx}
-                    to={cat.link}
+                    key={cat._id}
+                    to={`/products?category=${cat.slug}`}
                     className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/10 transition-colors group"
                   >
-                    <div className="w-8 h-8 rounded bg-white/20 flex items-center justify-center text-xs">
-                      {cat.name.charAt(0)}
+                    <div className="w-8 h-8 rounded bg-white/20 flex items-center justify-center overflow-hidden">
+                      {cat.icon ? (
+                        <img 
+                          src={cat.icon} 
+                          alt={cat.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-xs">{cat.name.charAt(0)}</span>
+                      )}
                     </div>
                     <span className="text-sm flex-1">{cat.name}</span>
                     <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -133,6 +178,83 @@ const HeroSection = () => {
           </div>
 
         </div>
+
+        {/* Mobile Categories Slider */}
+        {isMobile && categories.length > 0 && (
+          <div className="mt-8 lg:hidden">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-white text-sm">Browse Categories</h3>
+              <div className="flex gap-2">
+                <button
+                  onClick={prevSlide}
+                  className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors"
+                  aria-label="Previous category"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={nextSlide}
+                  className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors"
+                  aria-label="Next category"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="relative overflow-hidden rounded-2xl">
+              <div 
+                className="flex transition-transform duration-500 ease-out"
+                style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+              >
+                {categories.map((cat) => (
+                  <Link
+                    key={cat._id}
+                    to={`/products?category=${cat.slug}`}
+                    className="min-w-full"
+                  >
+                    <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 mx-1">
+                      <div className="flex items-center gap-4">
+                        <div className="w-16 h-16 rounded-xl bg-white/20 flex items-center justify-center overflow-hidden flex-shrink-0">
+                          {cat.icon ? (
+                            <img 
+                              src={cat.icon} 
+                              alt={cat.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-2xl">{cat.name.charAt(0)}</span>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-white text-lg mb-1">{cat.name}</h4>
+                          <p className="text-white/70 text-sm">{cat.count || 0} products</p>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-white/70" />
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Dots indicator */}
+            <div className="flex justify-center gap-2 mt-4">
+              {categories.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentSlide(idx)}
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    idx === currentSlide 
+                      ? 'bg-white w-6' 
+                      : 'bg-white/40'
+                  }`}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Bottom gradient fade */}

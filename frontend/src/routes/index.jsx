@@ -43,6 +43,7 @@ const AdminTicketDetailPage = lazy(() => import('../pages/admin/AdminTicketDetai
 const AdminTicketListPage = lazy(() => import('../pages/admin/TicketListPage'));
 const AdminCategories = lazy(() => import('../pages/admin/AdminCategories'));
 const AdminContactMessages = lazy(() => import('../pages/admin/AdminContactMessages'));
+const AdminSystemInfo  = lazy(() => import('../pages/admin/AdminSystemInfo'));
 
 // ============================================
 // Vendor Pages
@@ -128,6 +129,7 @@ function AppRoutes() {
           <Route path="tickets/:id" element={<AdminTicketDetailPage />} />
           <Route path="categories" element={<AdminCategories />} />
           <Route path="contact-messages" element={<AdminContactMessages />} />
+          <Route path="systemInfo" element={<AdminSystemInfo />} />
         </Route>
 
         {/* ============================================ */}

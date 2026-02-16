@@ -26,6 +26,7 @@ import settingsRoutes from './modules/settings/routes.js';
 import wishlistRoutes from './modules/wishlist/routes.js';
 import categoryRoutes from './modules/categories/category.routes.js';
 import contactRoutes from './modules/contact/contactRoutes.js';
+import systemRoutes  from './modules/SystemInfo/routes.js'
 
 const app = express();
 
@@ -77,6 +78,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/system', systemRoutes);
 
 // 404
 app.use('*', (req, res) => {

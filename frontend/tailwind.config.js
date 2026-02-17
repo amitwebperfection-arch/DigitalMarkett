@@ -8,8 +8,8 @@ export default {
   theme: {
     extend: {
       colors: {
-         primary:   'var(--color-primary, #3B82F6)',
-        secondary: 'var(--color-secondary, #8B5CF6)',
+         primary:   'var(--color-primary, #0c4a6e)',
+        secondary: 'var(--color-secondary, #38bdf8)',
         // primary: {
         //   50: '#f0f9ff',
         //   100: '#e0f2fe',

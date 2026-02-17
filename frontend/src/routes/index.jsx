@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import ProtectedRoute from './ProtectedRoute';
-import CheckoutGuard from '../pages/public/Checkout.jsx'; 
+
 import PublicLayout from '../layouts/PublicLayout';
 import AdminLayout from '../layouts/AdminLayout';
 import VendorLayout from '../layouts/VendorLayout';
@@ -56,6 +56,7 @@ const VendorEarnings = lazy(() => import('../pages/vendor/Earnings'));
 const VendorPayouts = lazy(() => import('../pages/vendor/Payouts'));
 const VendorReviews = lazy(() => import('../pages/vendor/Reviews'));
 const VendorEditProduct = lazy(() => import('../pages/vendor/EditProduct'));
+// const BankDetails = lazy(() => import('../pages/vendor/VendorBankDetails'));
 const VendorTicketDetailPage = lazy(() => import('../pages/vendor/TicketDetailPage'));
 const VendorTicketListPage = lazy(() => import('../pages/vendor/TicketListPage'));
 const VendorProfile = lazy(() => import('../pages/vendor/VendorProfile'));
@@ -85,32 +86,20 @@ function AppRoutes() {
       <Routes>
 
         {/* ============================================ */}
-        {/* PUBLIC ROUTES                                */}
+        {/* PUBLIC ROUTES */}
         {/* ============================================ */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<ProductList />} />
           <Route path="/products/:slug" element={<ProductDetails />} />
           <Route path="/cart" element={<Cart />} />
-
-          {/* ✅ Checkout — CheckoutGuard se wrap kiya */}
-          {/* Agar guest checkout OFF hai aur user logged in nahi → /login redirect */}
-          {/* Agar guest checkout ON hai → bina login ke bhi checkout ho sakta hai */}
-          <Route
-            path="/checkout"
-            element={
-              <CheckoutGuard>
-                <Checkout />
-              </CheckoutGuard>
-            }
-          />
-
+          <Route path="/checkout" element={<Checkout />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
         </Route>
 
         {/* ============================================ */}
-        {/* AUTH ROUTES                                  */}
+        {/* AUTH ROUTES */}
         {/* ============================================ */}
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<Login />} />
@@ -118,7 +107,7 @@ function AppRoutes() {
         </Route>
 
         {/* ============================================ */}
-        {/* ADMIN ROUTES                                 */}
+        {/* ADMIN ROUTES */}
         {/* ============================================ */}
         <Route
           path="/admin"
@@ -144,7 +133,7 @@ function AppRoutes() {
         </Route>
 
         {/* ============================================ */}
-        {/* VENDOR ROUTES                                */}
+        {/* VENDOR ROUTES */}
         {/* ============================================ */}
         <Route
           path="/vendor"
@@ -162,6 +151,7 @@ function AppRoutes() {
           <Route path="earnings" element={<VendorEarnings />} />
           <Route path="payouts" element={<VendorPayouts />} />
           <Route path="reviews" element={<VendorReviews />} />
+          {/* <Route path="bank-details" element={<BankDetails />} /> */}
           <Route path="tickets" element={<VendorTicketListPage />} />
           <Route path="tickets/:id" element={<VendorTicketDetailPage />} />
           <Route path="profile" element={<VendorProfile />} />
@@ -169,7 +159,7 @@ function AppRoutes() {
         </Route>
 
         {/* ============================================ */}
-        {/* USER ROUTES                                  */}
+        {/* USER ROUTES */}
         {/* ============================================ */}
         <Route
           path="/user"
@@ -184,7 +174,7 @@ function AppRoutes() {
           <Route path="downloads" element={<UserDownloads />} />
           <Route path="wishlist" element={<UserWishlist />} />
           <Route path="wallet" element={<UserWallet />} />
-          <Route path="profile" element={<UserProfile />} />
+          <Route path="profile" element={<UserProfile />} /> 
           <Route path="tickets" element={<TicketsPage />} />
           <Route path="tickets/new" element={<CreateTicketPage />} />
           <Route path="tickets/:id" element={<TicketDetailPage />} />
@@ -192,7 +182,7 @@ function AppRoutes() {
         </Route>
 
         {/* ============================================ */}
-        {/* 404 NOT FOUND                                */}
+        {/* 404 NOT FOUND */}
         {/* ============================================ */}
         <Route path="*" element={<NotFound />} />
 

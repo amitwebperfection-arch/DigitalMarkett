@@ -3,6 +3,8 @@ import Order from './model.js';
 import Product from '../products/model.js';
 import Wallet from '../wallet/model.js';
 import { COMMISSION_RATE } from '../../config/env.js';
+import { sendEmail } from '../../config/mail.js';
+import Settings from '../settings/model.js';
 
 // Generate a unique license key
 const generateLicenseKey = () => {
@@ -18,6 +20,210 @@ const generateLicenseKey = () => {
     }
   }
   return key;
+};
+
+// ─── Send Order Confirmation Email to User ────────────────────
+const sendOrderConfirmationEmail = async (order, userEmail, userName) => {
+  try {
+    const settings = await Settings.findOne().lean();
+    const currencySymbol = settings?.currencySymbol || '$';
+    const siteName = settings?.siteName || 'Digital Marketplace';
+
+    const itemsHtml = order.items.map(item => `
+      <tr>
+        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">
+          <strong>${item.title}</strong>
+        </td>
+        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right;">
+          ${currencySymbol}${item.price.toFixed(2)}
+        </td>
+      </tr>
+    `).join('');
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9fafb;">
+        <div style="background-color: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <div style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); 
+              color: white; width: 60px; height: 60px; border-radius: 50%; 
+              display: flex; align-items: center; justify-content: center; font-size: 30px; margin: 0 auto 15px;">
+              ✓
+            </div>
+            <h2 style="color: #1f2937; margin: 0;">Order Confirmed!</h2>
+          </div>
+
+          <p style="color: #4b5563; font-size: 16px; margin-bottom: 10px;">Hi <strong>${userName}</strong>,</p>
+          <p style="color: #4b5563; font-size: 16px; margin-bottom: 20px;">
+            Thank you for your purchase! Your order has been confirmed and is being processed.
+          </p>
+          
+          <div style="background-color: #eff6ff; border: 2px solid #3b82f6; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <p style="margin: 0; color: #1f2937; font-size: 14px;"><strong>Order ID:</strong></p>
+            <p style="margin: 5px 0 0 0; color: #3b82f6; font-size: 18px; font-weight: bold;">#${order._id.toString().slice(-8).toUpperCase()}</p>
+          </div>
+
+          <h3 style="color: #1f2937; margin-top: 30px; margin-bottom: 15px; font-size: 18px;">Order Details</h3>
+          
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <thead>
+              <tr style="background-color: #f3f4f6;">
+                <th style="padding: 12px; text-align: left; color: #6b7280; font-weight: 600; font-size: 14px;">Product</th>
+                <th style="padding: 12px; text-align: right; color: #6b7280; font-weight: 600; font-size: 14px;">Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
+
+          <div style="border-top: 2px solid #e5e7eb; padding-top: 15px; margin-top: 15px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span style="color: #6b7280; font-size: 14px;">Subtotal:</span>
+              <span style="color: #1f2937; font-weight: 500;">${currencySymbol}${order.subtotal.toFixed(2)}</span>
+            </div>
+            ${order.discount > 0 ? `
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span style="color: #10b981; font-size: 14px;">Discount ${order.appliedCoupon?.code ? `(${order.appliedCoupon.code})` : ''}:</span>
+                <span style="color: #10b981; font-weight: 500;">-${currencySymbol}${order.discount.toFixed(2)}</span>
+              </div>
+            ` : ''}
+            <div style="display: flex; justify-content: space-between; margin-top: 12px; padding-top: 12px; border-top: 2px solid #e5e7eb;">
+              <span style="color: #1f2937; font-size: 18px; font-weight: bold;">Total:</span>
+              <span style="color: #3b82f6; font-size: 20px; font-weight: bold;">${currencySymbol}${order.total.toFixed(2)}</span>
+            </div>
+          </div>
+
+          <div style="background-color: #f3f4f6; border-radius: 8px; padding: 20px; margin-top: 30px;">
+            <h4 style="color: #1f2937; margin-top: 0; margin-bottom: 10px; font-size: 16px;">Shipping Address</h4>
+            <p style="color: #6b7280; font-size: 14px; margin: 0; line-height: 1.6;">
+              ${order.shippingAddress.addressLine1}<br>
+              ${order.shippingAddress.addressLine2 ? order.shippingAddress.addressLine2 + '<br>' : ''}
+              ${order.shippingAddress.city}, ${order.shippingAddress.state} ${order.shippingAddress.zipCode}<br>
+              ${order.shippingAddress.country}
+            </p>
+          </div>
+
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #6b7280; font-size: 14px; margin: 0;">
+              You will receive your license keys and download links once the payment is confirmed.
+            </p>
+            <p style="color: #6b7280; font-size: 14px; margin-top: 10px;">
+              If you have any questions, feel free to contact our support team.
+            </p>
+          </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px; color: #9ca3af; font-size: 12px;">
+          <p>This is an automated message from ${siteName}</p>
+        </div>
+      </div>
+    `;
+
+    await sendEmail({
+      to: userEmail,
+      subject: `Order Confirmation - #${order._id.toString().slice(-8).toUpperCase()}`,
+      html,
+      type: 'orderConfirmation'
+    });
+  } catch (error) {
+    console.error('❌ Error sending order confirmation email:', error);
+  }
+};
+
+// ─── Send New Order Notification to Admin ─────────────────────
+const sendAdminOrderNotification = async (order, userEmail, userName) => {
+  try {
+    const settings = await Settings.findOne().lean();
+    const adminEmail = settings?.siteEmail;
+    const currencySymbol = settings?.currencySymbol || '$';
+    const siteName = settings?.siteName || 'Digital Marketplace';
+
+    if (!adminEmail) {
+      console.log('⚠️ Admin email not configured in settings');
+      return;
+    }
+
+    const itemsHtml = order.items.map(item => `
+      <tr>
+        <td style="padding: 8px; border-bottom: 1px solid #e5e7eb; color: #1f2937;">${item.title}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #e5e7eb; text-align: right; color: #1f2937;">
+          ${currencySymbol}${item.price.toFixed(2)}
+        </td>
+      </tr>
+    `).join('');
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9fafb;">
+        <div style="background-color: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <div style="background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); 
+            color: white; padding: 20px; border-radius: 8px; margin-bottom: 25px; text-align: center;">
+            <h2 style="margin: 0; font-size: 24px;">🎉 New Order Received!</h2>
+          </div>
+
+          <div style="background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 15px; margin-bottom: 20px;">
+            <p style="margin: 0; color: #1f2937; font-size: 14px;"><strong>Order ID:</strong> #${order._id.toString().slice(-8).toUpperCase()}</p>
+            <p style="margin: 8px 0 0 0; color: #1f2937; font-size: 14px;"><strong>Date:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
+          </div>
+
+          <h3 style="color: #1f2937; margin-bottom: 15px; font-size: 18px;">Customer Details</h3>
+          <div style="background-color: #f3f4f6; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+            <p style="color: #4b5563; font-size: 14px; margin: 5px 0;"><strong>Name:</strong> ${userName}</p>
+            <p style="color: #4b5563; font-size: 14px; margin: 5px 0;"><strong>Email:</strong> ${userEmail}</p>
+            <p style="color: #4b5563; font-size: 14px; margin: 5px 0;"><strong>Phone:</strong> ${order.personalDetails.phone}</p>
+          </div>
+
+          <h3 style="color: #1f2937; margin-bottom: 15px; font-size: 18px;">Order Items</h3>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1px solid #e5e7eb;">
+            <thead>
+              <tr style="background-color: #f3f4f6;">
+                <th style="padding: 10px; text-align: left; color: #6b7280; font-size: 14px; border-bottom: 2px solid #e5e7eb;">Product</th>
+                <th style="padding: 10px; text-align: right; color: #6b7280; font-size: 14px; border-bottom: 2px solid #e5e7eb;">Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
+
+          <div style="background-color: #f3f4f6; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <span style="color: #6b7280; font-size: 14px;">Subtotal:</span>
+              <span style="color: #1f2937; font-weight: 500;">${currencySymbol}${order.subtotal.toFixed(2)}</span>
+            </div>
+            ${order.discount > 0 ? `
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span style="color: #10b981; font-size: 14px;">Discount:</span>
+                <span style="color: #10b981; font-weight: 500;">-${currencySymbol}${order.discount.toFixed(2)}</span>
+              </div>
+            ` : ''}
+            <div style="display: flex; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 2px solid #e5e7eb;">
+              <span style="color: #1f2937; font-size: 16px; font-weight: bold;">Total:</span>
+              <span style="color: #3b82f6; font-size: 18px; font-weight: bold;">${currencySymbol}${order.total.toFixed(2)}</span>
+            </div>
+          </div>
+
+          <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 4px;">
+            <p style="margin: 0; color: #92400e; font-size: 14px;">
+              <strong>⚠️ Action Required:</strong> Please review and process this order in the admin panel.
+            </p>
+          </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px; color: #9ca3af; font-size: 12px;">
+          <p>This is an automated notification from ${siteName}</p>
+        </div>
+      </div>
+    `;
+
+    await sendEmail({
+      to: adminEmail,
+      subject: `🛒 New Order #${order._id.toString().slice(-8).toUpperCase()} - ${currencySymbol}${order.total.toFixed(2)}`,
+      html,
+      type: 'orderConfirmation' // Using same notification type
+    });
+  } catch (error) {
+    console.error('❌ Error sending admin order notification:', error);
+  }
 };
 
 export const createOrder = async (
@@ -88,7 +294,7 @@ export const createOrder = async (
 
   const total = subtotal - discount;
 
-  // After order creation
+  // Create order
   const order = await Order.create({
     user: userId,
     items: orderItems,
@@ -124,6 +330,20 @@ export const createOrder = async (
       await product.save();
     }
   }
+
+  // ✅ Send emails (async, don't block order creation)
+  const userName = `${personalDetails.firstName} ${personalDetails.lastName}`;
+  const userEmail = personalDetails.email;
+
+  // Send order confirmation to user
+  sendOrderConfirmationEmail(order, userEmail, userName).catch(err => {
+    console.error('Failed to send order confirmation:', err);
+  });
+
+  // Send notification to admin
+  sendAdminOrderNotification(order, userEmail, userName).catch(err => {
+    console.error('Failed to send admin notification:', err);
+  });
 
   return order;
 };

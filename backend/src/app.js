@@ -79,6 +79,17 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/system', systemRoutes);
+app.get('/robots.txt', async (req, res) => {
+  try {
+    const settings = await Settings.findOne();
+    const content = settings?.seo?.robotsTxt || 'User-agent: *\nAllow: /';
+    res.setHeader('Content-Type', 'text/plain');
+    res.send(content);
+  } catch {
+    res.setHeader('Content-Type', 'text/plain');
+    res.send('User-agent: *\nAllow: /');
+  }
+});
 
 // 404
 app.use('*', (req, res) => {

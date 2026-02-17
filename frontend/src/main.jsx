@@ -10,6 +10,7 @@ import { loadStripe } from '@stripe/stripe-js';
 
 import { store } from './store';
 import App from './App';
+import { SettingsProvider } from './context/SettingsContext'; 
 import './styles/globals.css';
 
 const stripePromise = loadStripe(
@@ -41,9 +42,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
+        <SettingsProvider>
         <Elements stripe={stripePromise}>
           <RouterProvider router={router} />
         </Elements>
+        </SettingsProvider>
         <Toaster position="top-right" reverseOrder={false} />
       </QueryClientProvider>
     </Provider>

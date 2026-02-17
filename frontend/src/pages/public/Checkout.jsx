@@ -9,6 +9,7 @@ import { clearCart } from '../../features/cart/cart.slice';
 import toast from 'react-hot-toast';
 import { CreditCard, Wallet, User, MapPin, Search } from 'lucide-react';
 import { allCountries } from './countries';
+import { useSettings, useFormatPrice } from '../../context/SettingsContext'; // ✅ ADD
 
 import {
   CardElement,
@@ -20,7 +21,10 @@ function Checkout() {
   const { items } = useSelector((state) => state.cart);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  
+
+  // ✅ ADD: Settings se payment methods, tax, currency lo
+  const { paymentMethods, taxEnabled, taxRate } = useSettings();
+  const formatPrice = useFormatPrice();
 
   const stripe = useStripe();
   const elements = useElements();
@@ -30,26 +34,26 @@ function Checkout() {
   const [discount, setDiscount] = useState(0);
   const [appliedCouponId, setAppliedCouponId] = useState(null);
 
-  // Payment State
-  const [paymentMethod, setPaymentMethod] = useState('stripe');
+  // Payment State — ✅ CHANGED: pehla enabled method default set karo
+  const getDefaultPayment = () => {
+    if (paymentMethods?.stripe?.enabled)   return 'stripe';
+    if (paymentMethods?.razorpay?.enabled) return 'razorpay';
+    if (paymentMethods?.wallet?.enabled)   return 'wallet';
+    if (paymentMethods?.cod?.enabled)      return 'cod';
+    return 'stripe';
+  };
+  const [paymentMethod, setPaymentMethod] = useState(getDefaultPayment);
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Personal Details State
   const [personalDetails, setPersonalDetails] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: ''
+    firstName: '', lastName: '', email: '', phone: ''
   });
 
   // Shipping Address State
   const [shippingAddress, setShippingAddress] = useState({
-    addressLine1: '',
-    addressLine2: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    country: ''
+    addressLine1: '', addressLine2: '',
+    city: '', state: '', zipCode: '', country: ''
   });
 
   // Country search state
@@ -58,66 +62,46 @@ function Checkout() {
   const [countries, setCountries] = useState([]);
   const [filteredCountries, setFilteredCountries] = useState(allCountries);
 
-  // Fetch countries on component mount
   useEffect(() => {
-  const countryList = allCountries
-    .sort((a, b) => a.name.localeCompare(b.name));
+    const countryList = allCountries.sort((a, b) => a.name.localeCompare(b.name));
+    setCountries(countryList);
+    setFilteredCountries(countryList);
+  }, []);
 
-  setCountries(countryList);
-  setFilteredCountries(countryList);
-}, []);
-
-
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (!event.target.closest('.country-selector')) {
-        setShowCountryDropdown(false);
-      }
+      if (!event.target.closest('.country-selector')) setShowCountryDropdown(false);
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Filter countries based on search
   useEffect(() => {
     if (countrySearch.trim() === '') {
       setFilteredCountries(countries);
     } else {
-      const filtered = countries.filter(country =>
-        country.name.toLowerCase().includes(countrySearch.toLowerCase())
-      );
-      setFilteredCountries(filtered);
+      setFilteredCountries(countries.filter(c =>
+        c.name.toLowerCase().includes(countrySearch.toLowerCase())
+      ));
     }
   }, [countrySearch, countries]);
 
-  const total = items.reduce(
-    (sum, item) => sum + (item.salePrice || item.price),
-    0
-  );
-  
-  const [finalTotal, setFinalTotal] = useState(total);
+  // ✅ CHANGED: Tax bhi calculate karo settings se
+  const subtotal = items.reduce((sum, item) => sum + (item.salePrice || item.price), 0);
+  const taxAmount = taxEnabled ? (subtotal * taxRate) / 100 : 0;
+  const totalBeforeDiscount = subtotal + taxAmount;
+  const finalTotal = totalBeforeDiscount - discount;
 
   const handlePersonalDetailsChange = (e) => {
-    setPersonalDetails({
-      ...personalDetails,
-      [e.target.name]: e.target.value
-    });
+    setPersonalDetails({ ...personalDetails, [e.target.name]: e.target.value });
   };
 
   const handleShippingAddressChange = (e) => {
-    setShippingAddress({
-      ...shippingAddress,
-      [e.target.name]: e.target.value
-    });
+    setShippingAddress({ ...shippingAddress, [e.target.name]: e.target.value });
   };
 
   const handleCountrySelect = (country) => {
-    setShippingAddress({
-      ...shippingAddress,
-      country: country.name
-    });
+    setShippingAddress({ ...shippingAddress, country: country.name });
     setCountrySearch(country.name);
     setShowCountryDropdown(false);
   };
@@ -126,76 +110,50 @@ function Checkout() {
     try {
       const res = await api.post('/coupons/apply', {
         code: couponCode,
-        cartTotal: total,
+        cartTotal: subtotal,
         productIds: items.map(item => item._id || item.id),
       });
-
       setDiscount(res.data.discount);
-      setFinalTotal(total - res.data.discount);
       setAppliedCouponId(res.data.couponId);
-
       dispatch(applyCouponAction(res.data));
-
-      toast.success(`Coupon applied! Discount: $${res.data.discount}`);
+      toast.success(`Coupon applied! Discount: ${formatPrice(res.data.discount)}`);
     } catch (err) {
       toast.error(err.response?.data?.message || err.message);
       setDiscount(0);
-      setFinalTotal(total);
       setAppliedCouponId(null);
     }
   };
 
   const validateForm = () => {
-    // Validate Personal Details
     if (!personalDetails.firstName || !personalDetails.lastName) {
-      toast.error('Please enter your full name');
-      return false;
+      toast.error('Please enter your full name'); return false;
     }
     if (!personalDetails.email) {
-      toast.error('Please enter your email');
-      return false;
+      toast.error('Please enter your email'); return false;
     }
     if (!personalDetails.phone) {
-      toast.error('Please enter your phone number');
-      return false;
+      toast.error('Please enter your phone number'); return false;
     }
-
-    // Validate Shipping Address
     if (!shippingAddress.addressLine1) {
-      toast.error('Please enter your address');
-      return false;
+      toast.error('Please enter your address'); return false;
     }
     if (!shippingAddress.city || !shippingAddress.state || !shippingAddress.zipCode) {
-      toast.error('Please complete your shipping address');
-      return false;
+      toast.error('Please complete your shipping address'); return false;
     }
     if (!shippingAddress.country) {
-      toast.error('Please select your country');
-      return false;
+      toast.error('Please select your country'); return false;
     }
-
     return true;
   };
 
   const handlePayment = async () => {
-    if (items.length === 0) {
-      toast.error('Cart is empty');
-      return;
-    }
-
-    if (!validateForm()) {
-      return;
-    }
-
+    if (items.length === 0) { toast.error('Cart is empty'); return; }
+    if (!validateForm()) return;
     if (paymentMethod === 'stripe' && (!stripe || !elements)) {
-      toast.error('Stripe not loaded');
-      return;
+      toast.error('Stripe not loaded'); return;
     }
-
     setIsProcessing(true);
-
     try {
-      // Create Order with all details
       const orderResponse = await orderService.createOrder({
         items: items.map(item => ({ productId: item._id || item.id })),
         paymentMethod,
@@ -208,11 +166,8 @@ function Checkout() {
 
       const orderId = orderResponse.order._id;
 
-      // Handle Payment
       if (paymentMethod === 'stripe') {
-        const { clientSecret } =
-          await paymentService.createPaymentIntent(orderId, 'stripe');
-
+        const { clientSecret } = await paymentService.createPaymentIntent(orderId, 'stripe');
         const result = await stripe.confirmCardPayment(clientSecret, {
           payment_method: {
             card: elements.getElement(CardElement),
@@ -231,16 +186,12 @@ function Checkout() {
             }
           },
         });
-
-        if (result.error) {
-          throw new Error(result.error.message);
-        }
+        if (result.error) throw new Error(result.error.message);
       }
 
       if (paymentMethod === 'razorpay') {
         await paymentService.createPaymentIntent(orderId, 'razorpay');
       }
-
       if (paymentMethod === 'wallet') {
         await paymentService.createPaymentIntent(orderId, 'wallet');
       }
@@ -248,7 +199,6 @@ function Checkout() {
       toast.success('Order placed successfully!');
       dispatch(clearCart());
       navigate('/user/orders');
-
     } catch (error) {
       toast.error(error.message || 'Payment failed');
     } finally {
@@ -263,73 +213,41 @@ function Checkout() {
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Left Column - Forms */}
         <div className="lg:col-span-2 space-y-6">
-          
+
           {/* Personal Details */}
           <div className="border rounded-lg p-6">
             <div className="flex items-center gap-2 mb-6">
               <User className="w-5 h-5 text-primary-600" />
               <h2 className="text-xl font-semibold">Personal Details</h2>
             </div>
-            
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  First Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="firstName"
-                  value={personalDetails.firstName}
+                <label className="block text-sm font-medium mb-2">First Name <span className="text-red-500">*</span></label>
+                <input type="text" name="firstName" value={personalDetails.firstName}
                   onChange={handlePersonalDetailsChange}
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="John"
-                  required
-                />
+                  placeholder="John" required />
               </div>
-              
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Last Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="lastName"
-                  value={personalDetails.lastName}
+                <label className="block text-sm font-medium mb-2">Last Name <span className="text-red-500">*</span></label>
+                <input type="text" name="lastName" value={personalDetails.lastName}
                   onChange={handlePersonalDetailsChange}
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="Doe"
-                  required
-                />
+                  placeholder="Doe" required />
               </div>
-              
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={personalDetails.email}
+                <label className="block text-sm font-medium mb-2">Email <span className="text-red-500">*</span></label>
+                <input type="email" name="email" value={personalDetails.email}
                   onChange={handlePersonalDetailsChange}
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="john@example.com"
-                  required
-                />
+                  placeholder="john@example.com" required />
               </div>
-              
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Phone <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={personalDetails.phone}
+                <label className="block text-sm font-medium mb-2">Phone <span className="text-red-500">*</span></label>
+                <input type="tel" name="phone" value={personalDetails.phone}
                   onChange={handlePersonalDetailsChange}
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="+1 (555) 000-0000"
-                  required
-                />
+                  placeholder="+1 (555) 000-0000" required />
               </div>
             </div>
           </div>
@@ -340,126 +258,71 @@ function Checkout() {
               <MapPin className="w-5 h-5 text-primary-600" />
               <h2 className="text-xl font-semibold">Shipping Address</h2>
             </div>
-            
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Address Line 1 <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="addressLine1"
-                  value={shippingAddress.addressLine1}
+                <label className="block text-sm font-medium mb-2">Address Line 1 <span className="text-red-500">*</span></label>
+                <input type="text" name="addressLine1" value={shippingAddress.addressLine1}
                   onChange={handleShippingAddressChange}
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="123 Main Street"
-                  required
-                />
+                  placeholder="123 Main Street" required />
               </div>
-              
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Address Line 2
-                </label>
-                <input
-                  type="text"
-                  name="addressLine2"
-                  value={shippingAddress.addressLine2}
+                <label className="block text-sm font-medium mb-2">Address Line 2</label>
+                <input type="text" name="addressLine2" value={shippingAddress.addressLine2}
                   onChange={handleShippingAddressChange}
                   className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="Apartment, suite, etc. (optional)"
-                />
+                  placeholder="Apartment, suite, etc. (optional)" />
               </div>
-              
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">
-                    City <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="city"
-                    value={shippingAddress.city}
+                  <label className="block text-sm font-medium mb-2">City <span className="text-red-500">*</span></label>
+                  <input type="text" name="city" value={shippingAddress.city}
                     onChange={handleShippingAddressChange}
                     className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    placeholder="New York"
-                    required
-                  />
+                    placeholder="New York" required />
                 </div>
-                
                 <div>
-                  <label className="block text-sm font-medium mb-2">
-                    State <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="state"
-                    value={shippingAddress.state}
+                  <label className="block text-sm font-medium mb-2">State <span className="text-red-500">*</span></label>
+                  <input type="text" name="state" value={shippingAddress.state}
                     onChange={handleShippingAddressChange}
                     className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    placeholder="NY"
-                    required
-                  />
+                    placeholder="NY" required />
                 </div>
               </div>
-              
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">
-                    ZIP Code <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="zipCode"
-                    value={shippingAddress.zipCode}
+                  <label className="block text-sm font-medium mb-2">ZIP Code <span className="text-red-500">*</span></label>
+                  <input type="text" name="zipCode" value={shippingAddress.zipCode}
                     onChange={handleShippingAddressChange}
                     className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    placeholder="10001"
-                    required
-                  />
+                    placeholder="10001" required />
                 </div>
-                
                 <div className="relative country-selector">
-                  <label className="block text-sm font-medium mb-2">
-                    Country <span className="text-red-500">*</span>
-                  </label>
+                  <label className="block text-sm font-medium mb-2">Country <span className="text-red-500">*</span></label>
                   <div className="relative">
-                    <input
-                      type="text"
-                      value={countrySearch}
-                      onChange={(e) => {
-                        setCountrySearch(e.target.value);
-                        setShowCountryDropdown(true);
-                      }}
+                    <input type="text" value={countrySearch}
+                      onChange={(e) => { setCountrySearch(e.target.value); setShowCountryDropdown(true); }}
                       onFocus={() => setShowCountryDropdown(true)}
                       className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent pr-10"
-                      placeholder="Search country..."
-                      required
-                    />
+                      placeholder="Search country..." required />
                     <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   </div>
-                  
                   {showCountryDropdown && filteredCountries.length > 0 && (
                     <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-60 overflow-y-auto">
                       {filteredCountries.slice(0, 10).map((country) => (
-                        <button
-                          key={country.code}
-                          type="button"
-                          onClick={() => handleCountrySelect(country)}
-                          className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 transition-colors"
-                        >
+                        <button key={country.code} type="button" onClick={() => handleCountrySelect(country)}
+                          className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2 transition-colors">
                           <span className="text-xl">{country.flag}</span>
                           <span>{country.name}</span>
                         </button>
                       ))}
                       {filteredCountries.length > 10 && (
                         <div className="px-4 py-2 text-sm text-gray-500 border-t">
-                          {filteredCountries.length - 10} more countries... Keep typing to refine
+                          {filteredCountries.length - 10} more... keep typing
                         </div>
                       )}
                     </div>
                   )}
-                  
                   {showCountryDropdown && filteredCountries.length === 0 && countrySearch && (
                     <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg p-4 text-center text-gray-500">
                       No countries found
@@ -470,7 +333,7 @@ function Checkout() {
             </div>
           </div>
 
-          {/* Payment Method */}
+          {/* Payment Method — ✅ CHANGED: sirf enabled methods dikhao */}
           <div className="border rounded-lg p-6">
             <div className="flex items-center gap-2 mb-6">
               <CreditCard className="w-5 h-5 text-primary-600" />
@@ -478,62 +341,69 @@ function Checkout() {
             </div>
 
             <div className="space-y-4">
-              <label className="flex items-center gap-3 p-4 border rounded-lg cursor-pointer hover:border-primary-500 transition-colors">
-                <input
-                  type="radio"
-                  name="payment"
-                  value="stripe"
-                  checked={paymentMethod === 'stripe'}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="w-4 h-4 text-primary-600"
-                />
-                <CreditCard className="w-5 h-5" />
-                <span>Credit / Debit Card (Stripe)</span>
-              </label>
-
-              {paymentMethod === 'stripe' && (
-                <div className="border rounded-lg p-4 ml-8">
-                  <p className="font-medium mb-3">Card Details</p>
-                  <CardElement
-                    options={{
-                      style: {
-                        base: {
-                          fontSize: '16px',
-                          color: '#424770',
-                          '::placeholder': {
-                            color: '#aab7c4',
-                          },
-                        },
-                      },
-                    }}
-                  />
-                </div>
+              {/* Stripe — sirf tab dikhao jab enabled ho */}
+              {paymentMethods?.stripe?.enabled && (
+                <>
+                  <label className="flex items-center gap-3 p-4 border rounded-lg cursor-pointer hover:border-primary-500 transition-colors">
+                    <input type="radio" name="payment" value="stripe"
+                      checked={paymentMethod === 'stripe'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      className="w-4 h-4 text-primary-600" />
+                    <CreditCard className="w-5 h-5" />
+                    <span>Credit / Debit Card (Stripe)</span>
+                  </label>
+                  {paymentMethod === 'stripe' && (
+                    <div className="border rounded-lg p-4 ml-8">
+                      <p className="font-medium mb-3">Card Details</p>
+                      <CardElement options={{ style: { base: { fontSize: '16px', color: '#424770', '::placeholder': { color: '#aab7c4' } } } }} />
+                    </div>
+                  )}
+                </>
               )}
 
-              <label className="flex items-center gap-3 p-4 border rounded-lg cursor-pointer hover:border-primary-500 transition-colors">
-                <input
-                  type="radio"
-                  name="payment"
-                  value="razorpay"
-                  checked={paymentMethod === 'razorpay'}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="w-4 h-4 text-primary-600"
-                />
-                <span>Razorpay</span>
-              </label>
+              {/* Razorpay */}
+              {paymentMethods?.razorpay?.enabled && (
+                <label className="flex items-center gap-3 p-4 border rounded-lg cursor-pointer hover:border-primary-500 transition-colors">
+                  <input type="radio" name="payment" value="razorpay"
+                    checked={paymentMethod === 'razorpay'}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="w-4 h-4 text-primary-600" />
+                  <span>Razorpay</span>
+                </label>
+              )}
 
-              <label className="flex items-center gap-3 p-4 border rounded-lg cursor-pointer hover:border-primary-500 transition-colors">
-                <input
-                  type="radio"
-                  name="payment"
-                  value="wallet"
-                  checked={paymentMethod === 'wallet'}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="w-4 h-4 text-primary-600"
-                />
-                <Wallet className="w-5 h-5" />
-                <span>Wallet</span>
-              </label>
+              {/* Wallet */}
+              {paymentMethods?.wallet?.enabled && (
+                <label className="flex items-center gap-3 p-4 border rounded-lg cursor-pointer hover:border-primary-500 transition-colors">
+                  <input type="radio" name="payment" value="wallet"
+                    checked={paymentMethod === 'wallet'}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="w-4 h-4 text-primary-600" />
+                  <Wallet className="w-5 h-5" />
+                  <span>Wallet</span>
+                </label>
+              )}
+
+              {/* COD */}
+              {paymentMethods?.cod?.enabled && (
+                <label className="flex items-center gap-3 p-4 border rounded-lg cursor-pointer hover:border-primary-500 transition-colors">
+                  <input type="radio" name="payment" value="cod"
+                    checked={paymentMethod === 'cod'}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className="w-4 h-4 text-primary-600" />
+                  <span>Cash on Delivery</span>
+                </label>
+              )}
+
+              {/* Koi bhi payment enabled nahi */}
+              {!paymentMethods?.stripe?.enabled &&
+               !paymentMethods?.razorpay?.enabled &&
+               !paymentMethods?.wallet?.enabled &&
+               !paymentMethods?.cod?.enabled && (
+                <p className="text-red-500 text-sm p-4 bg-red-50 rounded-lg">
+                  No payment methods are currently available. Please contact support.
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -545,14 +415,10 @@ function Checkout() {
 
             <div className="space-y-3 max-h-60 overflow-y-auto">
               {items.map(item => (
-                <div
-                  key={item._id || item.id}
-                  className="flex justify-between text-sm border-b pb-2"
-                >
+                <div key={item._id || item.id} className="flex justify-between text-sm border-b pb-2">
                   <span className="flex-1 truncate">{item.title}</span>
-                  <span className="font-medium ml-2">
-                    ${(item.salePrice || item.price).toFixed(2)}
-                  </span>
+                  {/* ✅ CHANGED: formatPrice se currency symbol + position */}
+                  <span className="font-medium ml-2">{formatPrice(item.salePrice || item.price)}</span>
                 </div>
               ))}
             </div>
@@ -560,19 +426,27 @@ function Checkout() {
             <div className="border-t pt-4 space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Subtotal</span>
-                <span>${total.toFixed(2)}</span>
+                <span>{formatPrice(subtotal)}</span>
               </div>
-              
+
+              {/* ✅ ADD: Tax row — sirf tab dikhao jab taxEnabled ho */}
+              {taxEnabled && taxAmount > 0 && (
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Tax ({taxRate}%)</span>
+                  <span>+{formatPrice(taxAmount)}</span>
+                </div>
+              )}
+
               {discount > 0 && (
                 <div className="flex justify-between text-green-600 text-sm">
                   <span>Discount</span>
-                  <span>-${discount.toFixed(2)}</span>
+                  <span>-{formatPrice(discount)}</span>
                 </div>
               )}
-              
+
               <div className="flex justify-between font-bold text-lg pt-2 border-t">
                 <span>Total</span>
-                <span>${(total - discount).toFixed(2)}</span>
+                <span>{formatPrice(finalTotal)}</span>
               </div>
             </div>
 
@@ -580,34 +454,24 @@ function Checkout() {
             <div className="border-t pt-4">
               <label className="block font-medium mb-2">Apply Coupon</label>
               <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={couponCode}
+                <input type="text" value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                   className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="COUPON CODE"
-                />
-                <button
-                  onClick={handleApplyCoupon}
+                  placeholder="COUPON CODE" />
+                <button onClick={handleApplyCoupon}
                   className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50"
-                  disabled={!couponCode}
-                >
+                  disabled={!couponCode}>
                   Apply
                 </button>
               </div>
               {discount > 0 && (
-                <p className="text-green-600 mt-2 text-sm">
-                  ✓ Coupon {couponCode} applied successfully!
-                </p>
+                <p className="text-green-600 mt-2 text-sm">✓ Coupon {couponCode} applied!</p>
               )}
             </div>
 
-            <button
-              onClick={handlePayment}
-              disabled={isProcessing}
-              className="w-full px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 font-semibold transition-colors"
-            >
-              {isProcessing ? 'Processing...' : `Pay $${(total - discount).toFixed(2)}`}
+            <button onClick={handlePayment} disabled={isProcessing}
+              className="w-full px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 font-semibold transition-colors">
+              {isProcessing ? 'Processing...' : `Pay ${formatPrice(finalTotal)}`}
             </button>
 
             <p className="text-xs text-gray-500 text-center">

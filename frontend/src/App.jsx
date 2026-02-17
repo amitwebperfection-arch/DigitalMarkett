@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { setUser } from './features/auth/auth.slice';
 import AppRoutes from './routes';
+import MaintenanceGuard from './components/common/MaintenanceGuard'; 
 
 function App() {
   const dispatch = useDispatch();
@@ -22,7 +23,14 @@ function App() {
     }
   }, [dispatch]);
 
-  return <AppRoutes />;
+  return(
+
+    <MaintenanceGuard>
+      <AppRoutes />
+    </MaintenanceGuard>
+  )
+
+   
 }
 
 export default App;

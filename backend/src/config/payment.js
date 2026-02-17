@@ -1,40 +1,118 @@
 import Stripe from 'stripe';
 import Razorpay from 'razorpay';
+import Settings from '../modules/settings/model.js'; 
 import {
   STRIPE_SECRET_KEY,
   RAZORPAY_KEY_ID,
-  RAZORPAY_KEY_SECRET
+  RAZORPAY_KEY_SECRET,
 } from './env.js';
 
-export const stripe = new Stripe(STRIPE_SECRET_KEY, {
-  apiVersion: '2025-10-29.clover'
-});
+// ─── DB se payment config lo, fallback .env ───────────────────
+const getPaymentConfig = async () => {
+  try {
+    const settings = await Settings.findOne().lean();
+    const pm = settings?.paymentMethods;
 
-export const razorpay = new Razorpay({
-  key_id: RAZORPAY_KEY_ID,
-  key_secret: RAZORPAY_KEY_SECRET
-});
+    return {
+      stripe: {
+        enabled:   pm?.stripe?.enabled   ?? false,
+        secretKey: pm?.stripe?.secretKey || STRIPE_SECRET_KEY,
+        publicKey: pm?.stripe?.publicKey || '',
+      },
+      razorpay: {
+        enabled:   pm?.razorpay?.enabled   ?? false,
+        keyId:     pm?.razorpay?.keyId     || RAZORPAY_KEY_ID,
+        keySecret: pm?.razorpay?.keySecret || RAZORPAY_KEY_SECRET,
+      },
+      wallet: { enabled: pm?.wallet?.enabled ?? true },
+      cod:    { enabled: pm?.cod?.enabled    ?? false },
+    };
+  } catch {
+    // DB fail to .env fallback
+    return {
+      stripe:   { enabled: !!STRIPE_SECRET_KEY,    secretKey: STRIPE_SECRET_KEY, publicKey: '' },
+      razorpay: { enabled: !!RAZORPAY_KEY_ID,       keyId: RAZORPAY_KEY_ID, keySecret: RAZORPAY_KEY_SECRET },
+      wallet:   { enabled: true },
+      cod:      { enabled: false },
+    };
+  }
+};
 
-export const createStripePaymentIntent = async (
-  amount,
-  currency = 'usd',
-  metadata = {}
-) => {
-  return stripe.paymentIntents.create({
-    amount: Math.round(amount * 100),
-    currency,
-    metadata
+// ─── Dynamic Stripe instance ───────────────────────────────────
+export const stripe = async () => {
+  const config = await getPaymentConfig();
+
+  if (!config.stripe.enabled) {
+    throw new Error('Stripe payment is not enabled. Enable it in Admin → Settings → Payment.');
+  }
+  if (!config.stripe.secretKey) {
+    throw new Error('Stripe Secret Key is not configured. Add it in Admin → Settings → Payment.');
+  }
+
+  return new Stripe(config.stripe.secretKey, {
+    apiVersion: '2025-10-29.clover',
   });
 };
 
-export const createRazorpayOrder = async (
-  amount,
-  currency = 'INR',
-  receipt
-) => {
-  return razorpay.orders.create({
-    amount: Math.round(amount * 100),
-    currency,
-    receipt
+// ─── Dynamic Razorpay instance ─────────────────────────────────
+export const razorpay = async () => {
+  const config = await getPaymentConfig();
+
+  if (!config.razorpay.enabled) {
+    throw new Error('Razorpay payment is not enabled. Enable it in Admin → Settings → Payment.');
+  }
+  if (!config.razorpay.keyId || !config.razorpay.keySecret) {
+    throw new Error('Razorpay keys are not configured. Add them in Admin → Settings → Payment.');
+  }
+
+  return new Razorpay({
+    key_id:     config.razorpay.keyId,
+    key_secret: config.razorpay.keySecret,
   });
+};
+
+// ─── Check if payment method is enabled ───────────────────────
+export const isPaymentEnabled = async (method) => {
+  const config = await getPaymentConfig();
+  return config[method]?.enabled ?? false;
+};
+
+// ─── Create Stripe Payment Intent ─────────────────────────────
+export const createStripePaymentIntent = async (amount, currency = 'usd', metadata = {}) => {
+  const stripeInstance = await getStripe();
+  return stripeInstance.paymentIntents.create({
+    amount:   Math.round(amount * 100),
+    currency,
+    metadata,
+  });
+};
+
+// ─── Create Razorpay Order ─────────────────────────────────────
+export const createRazorpayOrder = async (amount, currency = 'INR', receipt) => {
+  const razorpayInstance = await getRazorpay();
+  return razorpayInstance.orders.create({
+    amount:   Math.round(amount * 100),
+    currency,
+    receipt,
+  });
+};
+
+// ─── Get payment config for frontend (no secret keys) ─────────
+export const getPublicPaymentConfig = async () => {
+  const config = await getPaymentConfig();
+  return {
+    stripe:   { enabled: config.stripe.enabled,   publicKey: config.stripe.publicKey },
+    razorpay: { enabled: config.razorpay.enabled, keyId: config.razorpay.keyId },
+    wallet:   { enabled: config.wallet.enabled },
+    cod:      { enabled: config.cod.enabled },
+  };
+};
+
+export default {
+  stripe,
+  razorpay,
+  isPaymentEnabled,
+  createStripePaymentIntent,
+  createRazorpayOrder,
+  getPublicPaymentConfig,
 };

@@ -1,7 +1,19 @@
 import { Link } from 'react-router-dom';
-import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Linkedin, Github, Youtube } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { adminService } from '../../services/admin.service';
 
 function Footer() {
+  const { data: settings } = useQuery({
+    queryKey: ['admin-settings'],
+    queryFn: adminService.getSettings,
+    staleTime: 60000,
+  });
+
+  const appearance = settings?.appearance || {};
+  const social = settings?.socialLinks || {};
+  const siteName = settings?.siteName || "Digital Marketplace";
+
   return (
     <footer className="bg-gray-900 text-gray-300">
       <div className="container-custom py-12">
@@ -10,11 +22,14 @@ function Footer() {
           {/* Brand */}
           <div>
             <h3 className="text-xl font-semibold text-white">
-              Digital Marketplace
+              {siteName}
             </h3>
-            <p className="mt-3 text-sm text-gray-400">
-              Your trusted source for digital products and services.
-            </p>
+
+            {appearance.footerText && (
+              <p className="mt-3 text-sm text-gray-400">
+                {appearance.footerText}
+              </p>
+            )}
           </div>
 
           {/* Quick Links */}
@@ -23,21 +38,9 @@ function Footer() {
               Quick Links
             </h4>
             <ul className="space-y-2">
-              <li>
-                <Link to="/products" className="hover:text-white">
-                  Products
-                </Link>
-              </li>
-              <li>
-                <Link to="/about" className="hover:text-white">
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="hover:text-white">
-                  Contact
-                </Link>
-              </li>
+              <li><Link to="/products" className="hover:text-white">Products</Link></li>
+              <li><Link to="/about" className="hover:text-white">About Us</Link></li>
+              <li><Link to="/contact" className="hover:text-white">Contact</Link></li>
             </ul>
           </div>
 
@@ -47,21 +50,9 @@ function Footer() {
               Support
             </h4>
             <ul className="space-y-2">
-              <li>
-                <Link to="/help" className="hover:text-white">
-                  Help Center
-                </Link>
-              </li>
-              <li>
-                <Link to="/terms" className="hover:text-white">
-                  Terms of Service
-                </Link>
-              </li>
-              <li>
-                <Link to="/privacy" className="hover:text-white">
-                  Privacy Policy
-                </Link>
-              </li>
+              <li><Link to="/help" className="hover:text-white">Help Center</Link></li>
+              <li><Link to="/terms" className="hover:text-white">Terms of Service</Link></li>
+              <li><Link to="/privacy" className="hover:text-white">Privacy Policy</Link></li>
             </ul>
           </div>
 
@@ -70,26 +61,54 @@ function Footer() {
             <h4 className="text-lg font-medium text-white mb-3">
               Follow Us
             </h4>
+
             <div className="flex items-center gap-4">
-              <a href="#" className="hover:text-white">
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a href="#" className="hover:text-white">
-                <Twitter className="w-5 h-5" />
-              </a>
-              <a href="#" className="hover:text-white">
-                <Instagram className="w-5 h-5" />
-              </a>
-              <a href="#" className="hover:text-white">
-                <Linkedin className="w-5 h-5" />
-              </a>
+
+              {social.facebook && (
+                <a href={social.facebook} target="_blank" rel="noreferrer" className="hover:text-white">
+                  <Facebook className="w-5 h-5" />
+                </a>
+              )}
+
+              {social.twitter && (
+                <a href={social.twitter} target="_blank" rel="noreferrer" className="hover:text-white">
+                  <Twitter className="w-5 h-5" />
+                </a>
+              )}
+
+              {social.instagram && (
+                <a href={social.instagram} target="_blank" rel="noreferrer" className="hover:text-white">
+                  <Instagram className="w-5 h-5" />
+                </a>
+              )}
+
+              {social.linkedin && (
+                <a href={social.linkedin} target="_blank" rel="noreferrer" className="hover:text-white">
+                  <Linkedin className="w-5 h-5" />
+                </a>
+              )}
+
+              {social.youtube && (
+                <a href={social.youtube} target="_blank" rel="noreferrer" className="hover:text-white">
+                  <Youtube className="w-5 h-5" />
+                </a>
+              )}
+
+              {social.github && (
+                <a href={social.github} target="_blank" rel="noreferrer" className="hover:text-white">
+                  <Github className="w-5 h-5" />
+                </a>
+              )}
+
             </div>
           </div>
         </div>
 
         {/* Bottom */}
         <div className="border-t border-gray-800 mt-10 pt-6 text-center text-sm text-gray-500">
-          &copy; {new Date().getFullYear()} Digital Marketplace. All rights reserved.
+          {settings?.appearance?.copyrightText?.trim()
+            ? settings.appearance.copyrightText
+            : `© ${new Date().getFullYear()} ${settings?.siteName || "Digital Marketplace"}. All rights reserved.`}
         </div>
       </div>
     </footer>

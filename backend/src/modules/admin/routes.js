@@ -1,5 +1,6 @@
 import express from 'express';
 import * as adminController from './controller.js';
+import * as settingsController from '../settings/controller.js'; 
 import { protect, restrictTo } from '../../middlewares/auth.js';
 import { getAllMessages } from '../contact/contactController.js';
 
@@ -19,7 +20,7 @@ router.put('/users/:id/ban', adminController.banUser);
 router.put('/users/:id/unban', adminController.unbanUser);
 router.delete('/users/:id', adminController.deleteUser);
 
-// ✅ Vendors
+// Vendors
 router.get('/vendors', adminController.getVendors);
 
 router.put('/vendors/:id/approve', async (req, res, next) => {
@@ -42,17 +43,16 @@ router.put('/vendors/:id/reject', async (req, res, next) => {
   }
 });
 
-// ✅ Suspend vendor - use the admin service function
 router.put('/vendors/:id/suspend', adminController.suspendVendor);
 
-// ✅ Payouts
+// Payouts
 router.get('/payouts', adminController.getPayouts);
 router.put('/payouts/:id/process', adminController.processPayout);
 
+// Products
 router.get('/products', adminController.getAdminProducts);
 
-// Settings
-router.get('/settings', adminController.getSettings);
-router.put('/settings', adminController.updateSettings);
+router.get('/settings', settingsController.getSettings);
+router.put('/settings', settingsController.updateSettings);
 
 export default router;

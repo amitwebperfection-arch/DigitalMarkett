@@ -1,5 +1,5 @@
 import * as adminService from './service.js';
-import Settings from './settings.model.js';
+import Settings from '../settings/model.js';
 import ContactMessage from '../contact/contactModel.js';
 import Product from '../products/model.js';
 
@@ -93,40 +93,40 @@ export const processPayout = async (req, res, next) => {
   }
 };
 
-export const getSettings = async (req, res, next) => {
-  try {
-    let settings = await Settings.findOne();
+// export const getSettings = async (req, res, next) => {
+//   try {
+//     let settings = await Settings.findOne();
 
-    if (!settings) {
-      settings = await Settings.create({
-        siteName: 'My Store',
-        siteEmail: 'admin@example.com',
-        commissionRate: 10,
-        currency: 'USD',
-        payoutThreshold: 50,
-        maintenanceMode: false
-      });
-    }
+//     if (!settings) {
+//       settings = await Settings.create({
+//         siteName: 'My Store',
+//         siteEmail: 'admin@example.com',
+//         commissionRate: 10,
+//         currency: 'USD',
+//         payoutThreshold: 50,
+//         maintenanceMode: false
+//       });
+//     }
 
-    res.json({ success: true, ...settings.toObject() });
-  } catch (error) {
-    next(error);
-  }
-};
+//     res.json({ success: true, ...settings.toObject() });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
-export const updateSettings = async (req, res, next) => {
-  try {
-    const settings = await Settings.findOneAndUpdate(
-      {},
-      req.body,
-      { new: true, upsert: true }
-    );
+// export const updateSettings = async (req, res, next) => {
+//   try {
+//     const settings = await Settings.findOneAndUpdate(
+//       {},
+//       req.body,
+//       { new: true, upsert: true }
+//     );
 
-    res.json({ success: true, ...settings.toObject() });
-  } catch (error) {
-    next(error);
-  }
-};
+//     res.json({ success: true, ...settings.toObject() });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
 export const getAllMessages = async (req, res) => {
   try {

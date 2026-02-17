@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { ShoppingCart, User, LogOut, Package, Menu, X } from 'lucide-react';
 import { logout } from '../../features/auth/auth.slice';
 import { useState, useRef, useEffect } from 'react';
+import Search from './Search';
 
 function Navbar() {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
@@ -33,7 +34,7 @@ function Navbar() {
   }, []);
 
   return (
-    <nav className="bg-white border-b border-gray-200">
+    <nav className="bg-white border-b border-gray-200 sticky top-0 z-40">
       <div className="container-custom flex items-center justify-between h-16">
 
         {/* Logo */}
@@ -47,6 +48,9 @@ function Navbar() {
           <Link to="/products" className="text-gray-700 hover:text-primary-600">
             Products
           </Link>
+
+          {/* Search Component */}
+          <Search />
 
           {isAuthenticated ? (
             <>
@@ -131,6 +135,9 @@ function Navbar() {
 
         {/* Mobile Menu Button */}
         <div className="md:hidden flex items-center gap-4">
+          {/* Mobile Search */}
+          <Search />
+          
           {isAuthenticated && (
             <Link to="/cart" className="relative">
               <ShoppingCart className="w-5 h-5 text-gray-700" />

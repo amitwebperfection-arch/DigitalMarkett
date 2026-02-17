@@ -12,22 +12,16 @@ function Home() {
   return (
     <div className="min-h-screen">
       
-      {/* Hero Section - Amazon style with sidebar categories */}
       <HeroSection />
 
-      {/* Features Grid */}
       <FeaturesGrid />
 
-      {/* Categories Grid */}
       <CategoriesGrid />
 
-      {/* Featured Products */}
       <FeaturedProducts />
 
-      {/* Stats Section */}
       <StatsSection />
 
-      {/* Latest Products */}
       <ProductsCarousel
         title="Latest Arrivals"
         subtitle="Recently added products"

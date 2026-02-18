@@ -50,10 +50,10 @@ export const userService = {
     });
     return data;
   },
-  createWalletOrder: async ({ amount }) => {
-  const { data } = await api.post('/wallet/topup/init', { amount });
-  return data;
-},
+  createWalletOrder: async ({ amount, currency }) => {
+    const { data } = await api.post('/wallet/topup/init', { amount, currency });
+    return data;
+  },
   getWishlist: wishlistService.getWishlist,
   addToWishlist: wishlistService.addToWishlist,
   removeFromWishlist: wishlistService.removeFromWishlist

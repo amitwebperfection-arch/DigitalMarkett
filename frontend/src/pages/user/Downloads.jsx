@@ -64,13 +64,25 @@ function UserDownloads() {
                 {license.licenseKey}
               </p>
 
+              {/* ✅ Date & Time add kiya */}
+              <p className="text-sm text-gray-500 mb-2">
+                📅 {new Date(license.createdAt).toLocaleDateString('en-IN', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric'
+                })}{' '}
+                🕐 {new Date(license.createdAt).toLocaleTimeString('en-IN', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: true
+                })}
+              </p>
+
               {license.product?.files?.length > 0 ? (
                 license.product.files.map((file, idx) => (
                   <button
                     key={idx}
-                    onClick={() =>
-                      handleDownload(license._id, file.name)
-                    }
+                    onClick={() => handleDownload(license._id, file.name)}
                     className="mt-2 inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded hover:bg-primary-700"
                   >
                     <Download className="mr-2 w-4 h-4" />

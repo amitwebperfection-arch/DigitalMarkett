@@ -71,11 +71,12 @@ function UserDashboard() {
   const recentDownloads = data?.recentDownloads || [];
   const walletBalance = data?.walletBalance ?? 0;
 
-  // Safe number formatting helper
   const formatCurrency = (value) => {
-    const num = Number(value) || 0;
-    return num.toFixed(2);
-  };
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  }).format(Number(value) || 0);
+};
 
   // Quick Links Configuration
   const quickLinks = [
@@ -121,7 +122,7 @@ function UserDashboard() {
   const statsCards = [
     {
       title: 'Total Spent',
-      value: `$${formatCurrency(stats.totalSpent)}`,
+      value: `${formatCurrency(stats.totalSpent)}`,
       icon: DollarSign,
       color: 'text-green-600',
       bgColor: 'bg-green-50',
@@ -261,14 +262,14 @@ function UserDashboard() {
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-1">
                         <Package className="w-4 h-4 text-gray-500" />
-                        <p className="font-semibold text-gray-900">Order #{order.orderNumber || 'N/A'}</p>
+                        <p className="font-semibold text-gray-900">Order #{order._id.slice(-6).toUpperCase()}</p>
                       </div>
                       <p className="text-sm text-gray-600">
                         {order.createdAt ? format(new Date(order.createdAt), 'MMM dd, yyyy') : 'N/A'}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-gray-900">${formatCurrency(order.totalAmount)}</p>
+                      <p className="font-bold text-gray-900">{formatCurrency(order.total)}</p>
                       <span className={`text-xs px-2 py-1 rounded-full ${
                         order.status === 'completed' ? 'bg-green-100 text-green-700' :
                         order.status === 'processing' ? 'bg-blue-100 text-blue-700' :

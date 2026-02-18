@@ -44,13 +44,13 @@ export const getUserDashboard = async (userId) => {
   const activeOrders = orders.filter(o => ['pending', 'processing'].includes(o.status)).length;
   const totalSpent = orders
     .filter(o => o.status === 'completed')
-    .reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+    .reduce((sum, order) => sum + Number(order.total || 0), 0);
 
   // Recent orders (last 5)
   const recentOrders = orders.slice(0, 5).map(order => ({
     _id: order._id,
     orderNumber: order.orderNumber,
-    totalAmount: order.totalAmount,
+    total: order.total,
     status: order.status,
     createdAt: order.createdAt
   }));

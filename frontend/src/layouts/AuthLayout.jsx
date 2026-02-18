@@ -10,8 +10,8 @@ function AuthLayout() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-8">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex  items-center justify-center">
+      <div className="w-full ">
         <Outlet />
       </div>
     </div>

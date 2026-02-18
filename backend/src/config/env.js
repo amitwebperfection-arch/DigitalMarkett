@@ -41,3 +41,5 @@ export const FROM_NAME = process.env.FROM_NAME;
 export const REDIS_HOST = process.env.REDIS_HOST || 'localhost';
 export const REDIS_PORT = process.env.REDIS_PORT || 6379;
 export const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
+
+export const RESEND_API_KEY = process.env.RESEND_API_KEY;

@@ -1,3 +1,4 @@
+// src/services/auth.service.js
 import api from './api';
 
 export const authService = {
@@ -21,6 +22,12 @@ export const authService = {
     return data;
   },
 
+  // ✅ Google OAuth
+  googleAuth: async (credential) => {
+    const { data } = await api.post('/auth/google', { credential });
+    return data;
+  },
+
   logout: async () => {
     const { data } = await api.post('/auth/logout');
     return data;
@@ -40,7 +47,7 @@ export const authService = {
     const { data } = await api.post(`/auth/reset-password/${token}`, { password });
     return data;
   },
- 
+
   updateProfile: async (data) => {
     const response = await api.put('/user/profile', data);
     return response.data;

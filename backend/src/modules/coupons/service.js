@@ -1,5 +1,4 @@
 import Coupon from './model.js';
-
 import User from '../users/model.js';
 import Order from '../orders/model.js';
 

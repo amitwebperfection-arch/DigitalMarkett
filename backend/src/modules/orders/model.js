@@ -77,7 +77,10 @@ const orderSchema = new mongoose.Schema({
     },
     code: String,
     discountAmount: Number,
-    type: String,
+    type: {
+      type: String,
+      enum: ['percentage', 'fixed']
+    },
     value: Number
   }
 }, {

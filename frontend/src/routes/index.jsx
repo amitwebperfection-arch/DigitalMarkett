@@ -163,6 +163,7 @@ function AppRoutes() {
           <Route path="payouts" element={<VendorPayouts />} />
           <Route path="reviews" element={<VendorReviews />} />
           <Route path="tickets" element={<VendorTicketListPage />} />
+          <Route path="tickets/new" element={<CreateTicketPage />} /> 
           <Route path="tickets/:id" element={<VendorTicketDetailPage />} />
           <Route path="profile" element={<VendorProfile />} />
           <Route path="pending-approval" element={<VendorPendingApproval />} />

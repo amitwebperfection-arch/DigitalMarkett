@@ -97,7 +97,8 @@ function RegisterInner() {
   };
 
   return (
-    <div className="w-full">
+    <div className="min-h-screen bg-primary-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
       <div className="flex flex-col items-center mb-4">
         <div className="w-10 h-10 rounded-xl bg-primary-600 flex items-center justify-center shadow-lg shadow-primary-200 mb-2">
           <Zap className="w-5 h-5 text-white" />
@@ -287,6 +288,7 @@ function RegisterInner() {
           </Link>
         </div>
       </div>
+    </div>
     </div>
   );
 }

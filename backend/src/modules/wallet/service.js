@@ -61,33 +61,24 @@ export const createTopup = async (userId, amount, provider) => {
   return WalletTopup.create({ user: userId, amount, provider, status: 'pending' });
 };
 
-// ✅ Updated - provider parameter support
 export const createWalletOrder = async (userId, amount, currency, provider) => {
   const resolvedProvider = provider || (currency === 'INR' ? 'razorpay' : 'stripe');
 
   const topup = await WalletTopup.create({
-    user: userId,
-    amount,
-    currency,
-    provider: resolvedProvider,
-    status: 'pending'
+    user: userId, amount, currency,
+    provider: resolvedProvider, status: 'pending'
   });
 
   let order;
-
   if (resolvedProvider === 'razorpay') {
     order = await createRazorpayOrder(amount, currency, topup._id.toString());
-    topup.providerOrderId = order.id;
-    await topup.save();
-  }
-
-  if (resolvedProvider === 'stripe') {
+  } else {
     order = await createStripePaymentIntent(amount, currency.toLowerCase(), {
       topupId: topup._id.toString()
     });
-    topup.providerOrderId = order.id;
-    await topup.save();
   }
 
+  topup.providerOrderId = order.id;
+  await topup.save();
   return { topup, order };
 };

@@ -37,62 +37,33 @@ export const getTransactions = async (req, res, next) => {
 export const initWalletTopup = async (req, res, next) => {
   try {
     const { amount, currency = 'INR', provider } = req.body;
-
-    // Validate amount
-    if (!amount || Number(amount) <= 0) {
-      return res.status(400).json({ success: false, message: 'Invalid amount' });
-    }
-
-    // Check payment config
-    const config = await getPublicPaymentConfig();
-
-    // Provider determine karo
-    let resolvedProvider = provider;
-    if (!resolvedProvider) {
-      resolvedProvider = currency === 'INR' ? 'razorpay' : 'stripe';
-    }
-
-    // Check if provider is enabled
-    if (resolvedProvider === 'razorpay' && !config.razorpay?.enabled) {
-      return res.status(400).json({ success: false, message: 'Razorpay is not enabled' });
-    }
-    if (resolvedProvider === 'stripe' && !config.stripe?.enabled) {
-      return res.status(400).json({ success: false, message: 'Stripe is not enabled' });
-    }
+    if (!amount || Number(amount) <= 0)
+      return res.status(400).json({ message: 'Invalid amount' });
 
     const { topup, order } = await walletService.createWalletOrder(
-      req.user.id,
-      Number(amount),
-      currency,
-      resolvedProvider
+      req.user.id, Number(amount), currency, provider
     );
 
-    // Response
-    if (resolvedProvider === 'razorpay') {
+    if (provider === 'razorpay') {
+      const config = await getPublicPaymentConfig();
       return res.json({
         success: true,
         provider: 'razorpay',
         topupId: topup._id,
         orderId: order.id,
-        amount: order.amount / 100, // paise → rupees
+        amount: order.amount / 100,
         currency: order.currency,
-        key: config.razorpay.keyId, // ✅ Public key
+        key: config.razorpay.keyId,  // ✅ Public key
       });
     }
 
-    if (resolvedProvider === 'stripe') {
+    if (provider === 'stripe') {
       return res.json({
         success: true,
         provider: 'stripe',
         topupId: topup._id,
-        clientSecret: order.client_secret,
-        amount: Number(amount),
-        currency,
+        clientSecret: order.client_secret,  // ✅ Stripe secret
       });
     }
-
-  } catch (err) {
-    console.error('Wallet topup error:', err.message);
-    next(err);
-  }
+  } catch (err) { next(err); }
 };

@@ -20,6 +20,8 @@ const Cart = lazy(() => import('../pages/public/Cart'));
 const Checkout = lazy(() => import('../pages/public/Checkout'));
 const About = lazy(() => import('../pages/public/About'));
 const Contact = lazy(() => import('../pages/public/Contact'));
+const CmsPage = lazy(() => import('../pages/public/PublicCmsPage.jsx'));
+
 
 // ============================================
 // Auth Pages
@@ -44,6 +46,10 @@ const AdminTicketListPage = lazy(() => import('../pages/admin/TicketListPage'));
 const AdminCategories = lazy(() => import('../pages/admin/AdminCategories'));
 const AdminContactMessages = lazy(() => import('../pages/admin/AdminContactMessages'));
 const AdminSystemInfo  = lazy(() => import('../pages/admin/AdminSystemInfo'));
+const AdminPages = lazy(() => import('../pages/admin/CmsPages.jsx'));
+const AdminAddPage = lazy(() => import('../pages/admin/AddPage'));
+const AdminEditPage = lazy(() => import('../pages/admin/EditPage'));
+
 
 // ============================================
 // Vendor Pages
@@ -93,9 +99,6 @@ function AppRoutes() {
           <Route path="/products/:slug" element={<ProductDetails />} />
           <Route path="/cart" element={<Cart />} />
 
-          {/* ✅ Checkout — CheckoutGuard se wrap kiya */}
-          {/* Agar guest checkout OFF hai aur user logged in nahi → /login redirect */}
-          {/* Agar guest checkout ON hai → bina login ke bhi checkout ho sakta hai */}
           <Route
             path="/checkout"
             element={
@@ -107,6 +110,7 @@ function AppRoutes() {
 
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/:slug" element={<CmsPage />} />
         </Route>
 
         {/* ============================================ */}
@@ -141,6 +145,9 @@ function AppRoutes() {
           <Route path="categories" element={<AdminCategories />} />
           <Route path="contact-messages" element={<AdminContactMessages />} />
           <Route path="systemInfo" element={<AdminSystemInfo />} />
+          <Route path="pages" element={<AdminPages />} />
+          <Route path="pages/new" element={<AdminAddPage />} />
+          <Route path="pages/edit/:id" element={<AdminEditPage />} />
         </Route>
 
         {/* ============================================ */}

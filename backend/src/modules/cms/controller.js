@@ -1,3 +1,4 @@
+import Page from './model.js';
 import * as cmsService from './service.js';
 
 export const createPage = async (req, res, next) => {
@@ -44,6 +45,16 @@ export const deletePage = async (req, res, next) => {
   try {
     await cmsService.deletePage(req.params.id);
     res.json({ success: true, message: 'Page deleted' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getPageById = async (req, res, next) => {
+  try {
+    const page = await Page.findById(req.params.id);
+    if (!page) return res.status(404).json({ message: 'Page not found' });
+    res.json({ success: true, page });
   } catch (error) {
     next(error);
   }

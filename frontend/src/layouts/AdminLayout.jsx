@@ -16,6 +16,7 @@ const adminMenuItems = [
   { name: 'Settings', path: '/admin/settings', icon: 'Settings' },
   { name: 'Support Tickets', path: '/admin/tickets', icon: 'MessageSquare' },
   { name: 'System Info', path: '/admin/systemInfo', icon: 'Cpu' },
+  { name: 'CMS Pages', path: '/admin/pages', icon: 'FileText' },
 ];
 
 function AdminLayout() {

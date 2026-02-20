@@ -60,7 +60,7 @@ export const adminService = {
   },
 
   updateSettings: async (settingsData) => {
-    const { data } = await api.put('/admin/settings', settingsData);
+    const { data } = await api.put('/settings', settingsData); // sahi route
     return data;
   },
   

@@ -12,23 +12,26 @@ export const requestPayout = async (req, res, next) => {
       });
     }
 
+    const Settings = (await import('../settings/model.js')).default;
+    const settings = await Settings.findOne().lean();
+    const minPayout = settings?.payoutThreshold || 10;
+
     const wallet = await Wallet.findOne({ user: req.user.id });
-    
-    if (!wallet || wallet.balance < 10) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Minimum payout amount is $10' 
+
+    if (!wallet || wallet.balance < minPayout) {
+      return res.status(400).json({
+        success: false,
+        message: `Minimum payout amount is $${minPayout}`
       });
     }
 
     const payout = await payoutService.requestPayout(
-  req.user.id,
-  wallet.balance, 
-  user.bankDetails?.upiId ? 'upi' : 'bank_transfer',
-  user.bankDetails
-);
+      req.user.id,
+      wallet.balance,
+      user.bankDetails?.upiId ? 'upi' : 'bank_transfer',
+      user.bankDetails
+    );
 
-    
     res.status(201).json({ success: true, payout });
   } catch (error) {
     next(error);

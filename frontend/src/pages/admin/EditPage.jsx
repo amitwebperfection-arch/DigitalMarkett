@@ -46,6 +46,16 @@ const [editorMode, setEditorMode] = useState('visual');
   const handleSeoChange = (e) => {
     setForm({ ...form, seo: { ...form.seo, [e.target.name]: e.target.value } });
   };
+  
+  const handleTitleChange = (e) => {
+    const title = e.target.value;
+    const slug = title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+
+    setForm({ ...form, title, slug });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();

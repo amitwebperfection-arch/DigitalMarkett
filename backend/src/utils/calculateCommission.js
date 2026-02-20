@@ -1,4 +1,4 @@
-import Settings from '../../src/modules/settings/model.js';
+import Settings from '../modules/settings/model.js';
 import { COMMISSION_RATE as ENV_COMMISSION_RATE } from '../config/env.js';
 
 export const calculateEarnings = async (price) => {
@@ -9,6 +9,7 @@ export const calculateEarnings = async (price) => {
   }
 
   const settings = await Settings.findOne().lean();
+  console.log('Settings from DB:', settings?.commissionRate);
 
   let commissionRate;
 

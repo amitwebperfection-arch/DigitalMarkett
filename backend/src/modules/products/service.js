@@ -251,7 +251,7 @@ export const approveProduct = async (productId) => {
   ).populate('vendor', 'email');
 
   if (product?.vendor?.email) {
-    const { sendProductStatusEmail } = await import('../../services/email.service.js');
+    const { sendProductStatusEmail } = await import('../../utils/sendEmail.js');
     sendProductStatusEmail(product.vendor.email, product.title, 'approved').catch(console.error);
   }
 
@@ -264,7 +264,7 @@ export const rejectProduct = async (productId) => {
   ).populate('vendor', 'email');
 
   if (product?.vendor?.email) {
-    const { sendProductStatusEmail } = await import('../../services/email.service.js');
+    const { sendProductStatusEmail } = await import('../../utils/sendEmail.js');
     sendProductStatusEmail(product.vendor.email, product.title, 'rejected').catch(console.error);
   }
 

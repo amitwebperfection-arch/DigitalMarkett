@@ -4,13 +4,14 @@ import User from '../auth/model.js';
 
 export const requestPayout = async (vendorId, amount, method, accountDetails) => {
   const wallet = await Wallet.findOne({ user: vendorId });
+  if (!wallet) throw new Error('Wallet not found');
 
-  if (!wallet) {
-    throw new Error('Wallet not found');
-  }
+  const Settings = (await import('../settings/model.js')).default;
+  const settings = await Settings.findOne().lean();
+  const minPayout = settings?.payoutThreshold || 10;
 
-  if (amount < 10) {
-    throw new Error('Minimum payout amount is $10');
+  if (amount < minPayout) {
+    throw new Error(`Minimum payout amount is $${minPayout}`);
   }
 
   if (wallet.balance < amount) {
@@ -30,8 +31,7 @@ export const requestPayout = async (vendorId, amount, method, accountDetails) =>
   });
 
   const { sendEmail: mailSend } = await import('../../config/mail.js');
-  const Settings = (await import('../settings/model.js')).default;
-  const settings = await Settings.findOne().lean();
+
   const adminEmail = settings?.siteEmail;
 
   if (adminEmail) {
@@ -55,6 +55,9 @@ export const getVendorPayouts = async (vendorId, page = 1, limit = 10) => {
   const user = await User.findById(vendorId).select('hasBankDetails bankDetails');
   
   const wallet = await Wallet.findOne({ user: vendorId });
+  const Settings = (await import('../settings/model.js')).default;
+  const settings = await Settings.findOne().lean();
+  const payoutThreshold = settings?.payoutThreshold || 10;
   const availableBalance = wallet?.balance || 0;
 
   const payouts = await Payout.find({ vendor: vendorId })
@@ -69,7 +72,8 @@ export const getVendorPayouts = async (vendorId, page = 1, limit = 10) => {
     total, 
     page, 
     totalPages: Math.ceil(total / limit),
-    availableBalance,
+    availableBalance: wallet?.balance || 0,
+    payoutThreshold,
     hasBankDetails: user?.hasBankDetails || false,
     bankDetails: user?.bankDetails || null  
   };
@@ -138,7 +142,7 @@ export const processPayout = async (payoutId, adminId, status, notes = '') => {
 
   const vendor = await User.findById(payout.vendor).select('email');
   if (vendor?.email) {
-    const { sendPayoutStatusEmail } = await import('../../services/email.service.js');
+    const { sendPayoutStatusEmail } = await import('../../utils/sendEmail.js');
     sendPayoutStatusEmail(vendor.email, payout.amount, status, notes).catch(console.error);
   }
 

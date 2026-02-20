@@ -37,6 +37,7 @@ export const updateSettings = async (updates) => {
     settings.markModified('socialLinks');
     settings.markModified('security');
     settings.markModified('appearance');
+    settings.markModified('commissionRate');
     await settings.save();
   }
   return settings;

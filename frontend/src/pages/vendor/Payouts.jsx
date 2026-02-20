@@ -15,17 +15,13 @@ function VendorPayouts() {
   const navigate = useNavigate();
   const limit = 10;
 
-
-  /* ================= FETCH PAYOUTS ================= */
-  const {
-    data,
-    isLoading,
-    isFetching
-  } = useQuery({
+  const { data, isLoading, isFetching } = useQuery({
     queryKey: ['vendor-payouts', page, limit],
     queryFn: () => vendorService.getPayouts({ page, limit }),
     keepPreviousData: true
   });
+
+  const minPayout = data?.payoutThreshold || 10;
 
   // ====================== SERVICE LAYER======================
   const [withdrawAmount, setWithdrawAmount] = useState(0);
@@ -114,8 +110,8 @@ useEffect(() => {
       return;
     }
 
-    if (!data?.availableBalance || data.availableBalance < 10) {
-      toast.error('Minimum payout amount is $10');
+    if (!data?.availableBalance || data.availableBalance < minPayout) {
+      toast.error(`Minimum payout amount is $${minPayout}`); 
       return;
     }
 
@@ -123,8 +119,8 @@ useEffect(() => {
   };
 
 const confirmPayout = () => {
-  if (withdrawAmount < 10) {
-    toast.error('Minimum payout amount is $10');
+   if (withdrawAmount < minPayout) {
+    toast.error(`Minimum payout amount is $${minPayout}`);
     return;
   }
 
@@ -193,7 +189,7 @@ const confirmPayout = () => {
                 requestMutation.isPending ||
                 !data?.hasBankDetails ||
                 !data?.availableBalance ||
-                data.availableBalance < 10
+                data.availableBalance < minPayout
               }
             >
               {requestMutation.isPending ? (
@@ -215,9 +211,9 @@ const confirmPayout = () => {
               </p>
             )}
 
-            {data?.availableBalance < 10 && data?.hasBankDetails && (
+            {data?.availableBalance < minPayout && data?.hasBankDetails && (
               <p className="text-sm text-gray-600 mt-3">
-                Minimum payout amount is $10.00
+                Minimum payout amount is ${minPayout}.00 
               </p>
             )}
           </div>
@@ -337,12 +333,12 @@ const confirmPayout = () => {
               </p>
               <input
                 type="number"
-                min={10}
+                min={minPayout}
                 max={data?.availableBalance || 0}
                 value={withdrawAmount}
                 onChange={(e) => setWithdrawAmount(Number(e.target.value))}
                 className="w-2/3 border border-gray-300 rounded-lg px-3 py-2 text-center"
-                placeholder={`Min $10, Max $${data?.availableBalance?.toFixed(2)}`}
+                placeholder={`Min $${minPayout}, Max $${data?.availableBalance?.toFixed(2)}`}
               />
               <p className="text-xs text-gray-500 mt-1">
                 Maximum available balance: ${data?.availableBalance?.toFixed(2)}

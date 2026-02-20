@@ -15,7 +15,6 @@ function AddProduct() {
   const [additionalImages, setAdditionalImages] = useState([]);
   const [productFiles, setProductFiles] = useState([]);
 
-  // ✅ Fetch categories
   const { data: categoryData, isLoading: categoryLoading } = useQuery({
     queryKey: ['categories'],
     queryFn: () => categoryService.getCategories(),
@@ -37,7 +36,6 @@ function AddProduct() {
     featured: false
   });
 
-  // Changelog state
   const [changelog, setChangelog] = useState([
     { version: '1.0.0', date: new Date().toISOString().split('T')[0], changes: ['Initial release'] }
   ]);
@@ -143,7 +141,6 @@ function AddProduct() {
     setProductFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Changelog handling
   const addChangelogEntry = () => {
     setChangelog(prev => [...prev, { 
       version: '', 

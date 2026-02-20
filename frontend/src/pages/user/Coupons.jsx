@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
+
 
 export default function UserCoupons({ onApply }) {
   const { data, isLoading } = useQuery({
@@ -13,14 +15,15 @@ export default function UserCoupons({ onApply }) {
 
   const handleApply = (code) => {
     if (onApply) {
-      onApply(code); // checkout ke liye
+      onApply(code); 
     }
     toast.success(`Coupon ${code} applied`);
   };
 
-  if (isLoading) {
-    return <div className="text-center py-10">Loading coupons...</div>;
-  }
+ 
+   if (isLoading) {
+  return <LoadingSpinner fullScreen />;
+}
 
   return (
     <div className="container-custom py-8 px-0 md:px-4 space-y-6">

@@ -172,22 +172,22 @@ function ProductList() {
                     }`}
                   >
                     <div
-  className={`w-16 h-16 rounded-full flex items-center justify-center mb-3 transition-all overflow-hidden ${
-    categoryFromUrl === category.slug
-      ? 'bg-primary-600 scale-110'
-      : 'bg-gray-100 group-hover:bg-primary-100 group-hover:scale-105'
-  }`}
->
-  {category.icon ? (
-    <img
-      src={category.icon}
-      alt={category.name}
-      className="w-full h-full object-cover"
-    />
-  ) : (
-    <span className="text-3xl">{category.emoji || '📦'}</span>
-  )}
-</div>
+                        className={`w-16 h-16 rounded-full flex items-center justify-center mb-3 transition-all overflow-hidden ${
+                          categoryFromUrl === category.slug
+                            ? 'bg-primary-600 scale-110'
+                            : 'bg-gray-100 group-hover:bg-primary-100 group-hover:scale-105'
+                        }`}
+                      >
+                        {category.icon ? (
+                          <img
+                            src={category.icon}
+                            alt={category.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-3xl">{category.emoji || '📦'}</span>
+                        )}
+                      </div>
 
                     <span className={`font-semibold text-sm text-center line-clamp-2 ${
                       categoryFromUrl === category.slug 

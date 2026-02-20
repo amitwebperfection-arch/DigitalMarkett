@@ -36,11 +36,9 @@ function VendorProfile() {
     confirmPassword: ''
   });
 
-  /* ================= LOAD USER DATA ================= */
   useEffect(() => {
     const loadUserData = async () => {
       try {
-        // Load profile data
         setFormData({
           name: user?.name || '',
           email: user?.email || '',
@@ -48,7 +46,6 @@ function VendorProfile() {
           description: user?.vendorInfo?.description || ''
         });
 
-        // Load bank details
         try {
           const data = await vendorService.getDashboard();
           if (data?.bankDetails) {
@@ -74,7 +71,6 @@ function VendorProfile() {
     loadUserData();
   }, [user]);
 
-  /* ================= MUTATIONS ================= */
   const updateProfileMutation = useMutation({
     mutationFn: authService.updateProfile,
     onSuccess: (data) => {
@@ -114,7 +110,6 @@ function VendorProfile() {
     }
   });
 
-  /* ================= HANDLERS ================= */
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
@@ -174,7 +169,6 @@ function VendorProfile() {
     return badges[status] || badges.pending;
   };
 
-  /* ================= LOADING STATE ================= */
   if (loading) {
     return (
       <div className="flex justify-center items-center h-96">
@@ -182,13 +176,10 @@ function VendorProfile() {
       </div>
     );
   }
-
-  /* ================= UI ================= */
   return (
     <div className="container-custom py-8 px-0 md:px-4">
       <h1 className="text-3xl font-bold mb-6">Vendor Profile</h1>
 
-      {/* Vendor Status Banner */}
       {user?.vendorInfo?.status && (
         <div className={`mb-6 p-4 rounded-lg ${getStatusBadge(user.vendorInfo.status)}`}>
           <div className="flex items-center justify-between">
@@ -210,7 +201,6 @@ function VendorProfile() {
         </div>
       )}
 
-      {/* Tabs */}
       <div className="mb-6 border-b">
         <div className="flex gap-4">
           <button
@@ -256,14 +246,12 @@ function VendorProfile() {
         </div>
       </div>
 
-      {/* Personal Info Tab */}
       {activeTab === 'profile' && (
         <div className="max-w-2xl">
           <h2 className="text-xl font-semibold mb-4">Personal Information</h2>
           <div className="bg-white p-6 rounded-lg shadow">
             <form onSubmit={handleProfileSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Full Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Full Name *
@@ -279,7 +267,6 @@ function VendorProfile() {
                   />
                 </div>
 
-                {/* Email */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Email
@@ -294,7 +281,6 @@ function VendorProfile() {
                 </div>
               </div>
 
-              {/* Role */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Role
@@ -307,7 +293,6 @@ function VendorProfile() {
                 />
               </div>
 
-              {/* Submit Button */}
               <button
                 type="submit"
                 className="btn-primary px-6 py-2 disabled:opacity-50"
@@ -327,13 +312,11 @@ function VendorProfile() {
         </div>
       )}
 
-      {/* Business Details Tab */}
       {activeTab === 'business' && (
         <div className="max-w-2xl">
           <h2 className="text-xl font-semibold mb-4">Business Details</h2>
           <div className="bg-white p-6 rounded-lg shadow">
             <form onSubmit={handleProfileSubmit} className="space-y-6">
-              {/* Business Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Business Name *
@@ -350,7 +333,6 @@ function VendorProfile() {
                 />
               </div>
 
-              {/* Business Description */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Business Description *
@@ -367,7 +349,6 @@ function VendorProfile() {
                 />
               </div>
 
-              {/* Application Status */}
               {user?.vendorInfo?.appliedAt && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -382,7 +363,6 @@ function VendorProfile() {
                 </div>
               )}
 
-              {/* Submit Button */}
               <button
                 type="submit"
                 className="btn-primary px-6 py-2 disabled:opacity-50"
@@ -408,7 +388,6 @@ function VendorProfile() {
         </div>
       )}
 
-      {/* Bank Details Tab */}
       {activeTab === 'bank' && (
         <div className="max-w-2xl">
           <h2 className="text-xl font-semibold mb-4">Bank Details</h2>
@@ -417,7 +396,6 @@ function VendorProfile() {
               Add your bank details to receive payments for your sales.
             </p>
             <form onSubmit={handleBankSubmit} className="space-y-6">
-              {/* Account Holder Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Account Holder Name *
@@ -434,7 +412,6 @@ function VendorProfile() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Bank Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Bank Name *
@@ -450,7 +427,6 @@ function VendorProfile() {
                   />
                 </div>
 
-                {/* Account Number */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Account Number *
@@ -468,7 +444,6 @@ function VendorProfile() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* IFSC Code */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     IFSC Code *
@@ -484,7 +459,6 @@ function VendorProfile() {
                   />
                 </div>
 
-                {/* UPI ID */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     UPI ID (Optional)
@@ -503,7 +477,6 @@ function VendorProfile() {
                 </div>
               </div>
 
-              {/* Security Notice */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div className="flex items-start">
                   <svg className="w-5 h-5 text-blue-600 mt-0.5 mr-3" fill="currentColor" viewBox="0 0 20 20">
@@ -521,7 +494,6 @@ function VendorProfile() {
                 </div>
               </div>
 
-              {/* Submit Button */}
               <div className="flex items-center justify-between pt-4 border-t">
                 <p className="text-sm text-gray-600">* Required fields</p>
                 <button
@@ -544,13 +516,11 @@ function VendorProfile() {
         </div>
       )}
 
-      {/* Password Tab */}
       {activeTab === 'password' && (
         <div className="max-w-2xl">
           <h2 className="text-xl font-semibold mb-4">Change Password</h2>
           <div className="bg-white p-6 rounded-lg shadow">
             <form onSubmit={handlePasswordSubmit} className="space-y-6">
-              {/* Current Password */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Current Password *
@@ -566,7 +536,6 @@ function VendorProfile() {
                 />
               </div>
 
-              {/* New Password */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   New Password *
@@ -582,7 +551,6 @@ function VendorProfile() {
                 />
               </div>
 
-              {/* Confirm Password */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Confirm New Password *
@@ -598,7 +566,6 @@ function VendorProfile() {
                 />
               </div>
 
-              {/* Submit Button */}
               <button
                 type="submit"
                 className="btn-primary px-6 py-2 disabled:opacity-50"

@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Clock, TrendingUp } from 'lucide-react';
 import HeroSection from '../../components/Home/HeroSection';
 import FeaturesGrid from '../../components/Home/FeaturesGrid';
@@ -7,21 +8,27 @@ import ProductsCarousel from '../../components/Home/ProductsCarousel';
 import StatsSection from '../../components/Home/StatsSection';
 import VendorCTA from '../../components/Home/VendorCTA';
 import Testimonials from '../../components/Home/Testimonials';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 function Home() {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 200);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return <LoadingSpinner fullScreen />;
+  }
+
   return (
     <div className="min-h-screen">
-      
       <HeroSection />
-
       <FeaturesGrid />
-
       <CategoriesGrid />
-
       <FeaturedProducts />
-
       <StatsSection />
-
       <ProductsCarousel
         title="Latest Arrivals"
         subtitle="Recently added products"
@@ -32,8 +39,6 @@ function Home() {
         gradientColors="from-blue-500 to-cyan-500"
         bgColor="bg-white"
       />
-
-      {/* Best Sellers */}
       <ProductsCarousel
         title="Best Sellers"
         subtitle="Most popular this month"
@@ -44,13 +49,8 @@ function Home() {
         gradientColors="from-orange-500 to-red-500"
         bgColor="bg-slate-50"
       />
-
-      {/* Testimonials */}
       <Testimonials />
-
-      {/* Vendor CTA */}
       <VendorCTA />
-
     </div>
   );
 }

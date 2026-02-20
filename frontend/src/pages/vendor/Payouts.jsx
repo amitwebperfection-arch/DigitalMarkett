@@ -136,8 +136,6 @@ const confirmPayout = () => {
   });
 };
 
-
-  /* ================= LOADING ================= */
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-96">
@@ -148,7 +146,6 @@ const confirmPayout = () => {
 
   const bankDetails = data?.bankDetails;
 
-  /* ================= UI ================= */
   return (
     <>
       <div className="container-custom py-8 px-0 md:px-4 space-y-6">
@@ -162,7 +159,6 @@ const confirmPayout = () => {
           </button>
         </div>
 
-        {/* ===== Balance & Bank Details Card ===== */}
         <div className="grid md:grid-cols-2 gap-6">
           {/* Available Balance */}
           <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg shadow border border-green-200">
@@ -275,7 +271,6 @@ const confirmPayout = () => {
           </div>
         </div>
 
-        {/* ===== Payout History ===== */}
         <div className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
             <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -316,7 +311,6 @@ const confirmPayout = () => {
         </div>
       </div>
 
-      {/* ===== CUSTOM CONFIRMATION MODAL ===== */}
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">

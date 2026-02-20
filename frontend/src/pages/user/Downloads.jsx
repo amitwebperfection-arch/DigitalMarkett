@@ -13,7 +13,6 @@ function UserDownloads() {
 
   const downloads = data?.downloads || [];
 
-  // ✅ SAFE DOWNLOAD HANDLER (NO CORRUPTION)
   const handleDownload = async (licenseId, fileName) => {
     try {
       const blob = await userService.downloadFile(licenseId);
@@ -64,7 +63,6 @@ function UserDownloads() {
                 {license.licenseKey}
               </p>
 
-              {/* ✅ Date & Time add kiya */}
               <p className="text-sm text-gray-500 mb-2">
                 📅 {new Date(license.createdAt).toLocaleDateString('en-IN', {
                   day: 'numeric',

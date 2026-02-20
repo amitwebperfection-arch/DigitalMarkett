@@ -14,7 +14,7 @@ function AdminOrders() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-  // Fetch orders
+ 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-orders', page],
     queryFn: () => orderService.getAdminOrders({ page, limit: 10 }),
@@ -26,7 +26,7 @@ function AdminOrders() {
     setShowModal(true);
   };
 
-  // Mobile card fields
+  
   const mobileFields = [
     {
       label: 'Date',

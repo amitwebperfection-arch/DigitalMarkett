@@ -91,11 +91,9 @@ function UserProfile() {
     <div className="container-custom py-8 px-0 md:px-4">
       <h1 className="text-2xl font-bold mb-6">My Profile</h1>
 
-      {/* Profile Information Form */}
       <div className="max-w-lg mb-8">
         <h2 className="text-xl font-semibold mb-4">Profile Information</h2>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Full Name */}
           <div>
             <label className="block mb-2 font-medium">Full Name</label>
             <input
@@ -109,7 +107,6 @@ function UserProfile() {
             />
           </div>
 
-          {/* Email */}
           <div>
             <label className="block mb-2 font-medium">Email</label>
             <input
@@ -122,7 +119,6 @@ function UserProfile() {
             <p className="text-sm text-gray-500 mt-1">Email cannot be changed</p>
           </div>
 
-          {/* Role */}
           <div>
             <label className="block mb-2 font-medium">Role</label>
             <input
@@ -133,7 +129,6 @@ function UserProfile() {
             />
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             className="btn-primary w-full"
@@ -144,7 +139,6 @@ function UserProfile() {
         </form>
       </div>
 
-      {/* Password Section */}
       <div className="max-w-lg">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">Password</h2>
@@ -160,7 +154,6 @@ function UserProfile() {
 
         {showPasswordSection && (
           <form onSubmit={handlePasswordSubmit} className="space-y-6 bg-gray-50 p-6 rounded-lg">
-            {/* Current Password */}
             <div>
               <label className="block mb-2 font-medium">Current Password</label>
               <input
@@ -174,7 +167,6 @@ function UserProfile() {
               />
             </div>
 
-            {/* New Password */}
             <div>
               <label className="block mb-2 font-medium">New Password</label>
               <input
@@ -188,7 +180,6 @@ function UserProfile() {
               />
             </div>
 
-            {/* Confirm Password */}
             <div>
               <label className="block mb-2 font-medium">Confirm New Password</label>
               <input
@@ -202,7 +193,6 @@ function UserProfile() {
               />
             </div>
 
-            {/* Action Buttons */}
             <div className="flex gap-3">
               <button
                 type="submit"

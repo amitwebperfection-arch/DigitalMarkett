@@ -13,13 +13,11 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import api from '../../services/api';
 
-// ─── Fetch public payment config from backend ─────────────────
 const fetchPaymentConfig = async () => {
   const { data } = await api.get('/payments/config');
-  return data; // { stripe: { enabled, publicKey }, razorpay: { enabled, keyId }, wallet, cod }
+  return data; 
 };
 
-// ─── Stripe Card Form (inner component needs Elements context) ─
 function StripeCardForm({ amount, onSuccess, onCancel }) {
   const stripe    = useStripe();
   const elements  = useElements();
@@ -30,14 +28,12 @@ function StripeCardForm({ amount, onSuccess, onCancel }) {
     if (!stripe || !elements) return;
     setProcessing(true);
     try {
-      // 1. Create topup intent on backend
       const { data } = await api.post('/wallet/topup/init', {
         amount:   Number(amount),
         currency: 'usd',
         provider: 'stripe',
       });
 
-      // 2. Confirm card payment with clientSecret
       const result = await stripe.confirmCardPayment(data.clientSecret, {
         payment_method: { card: elements.getElement(CardElement) },
       });
@@ -97,28 +93,24 @@ function StripeCardForm({ amount, onSuccess, onCancel }) {
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────
 function UserWallet() {
   const [page, setPage]                   = useState(1);
   const [showAddModal, setShowAddModal]   = useState(false);
   const [amount, setAmount]               = useState('');
   const [selectedProvider, setSelectedProvider] = useState('');
-  const [step, setStep]                   = useState('select'); // 'select' | 'stripe-card'
+  const [step, setStep]                   = useState('select'); 
   const queryClient = useQueryClient();
 
-  // ── Wallet transactions ──────────────────────────────────────
   const { data, isLoading } = useQuery({
     queryKey: ['user-wallet', page],
     queryFn:  () => userService.getWalletTransactions({ page, limit: 10 }),
     keepPreviousData: true,
   });
 
-  // ── Payment config (DB → public keys only) ───────────────────
   const { data: payConfig, isLoading: configLoading } = useQuery({
     queryKey: ['payment-config'],
     queryFn:  fetchPaymentConfig,
     onSuccess: (cfg) => {
-      // Auto-select first enabled provider
       if (!selectedProvider) {
         if (cfg?.razorpay?.enabled)      setSelectedProvider('razorpay');
         else if (cfg?.stripe?.enabled)   setSelectedProvider('stripe');
@@ -126,8 +118,6 @@ function UserWallet() {
     },
   });
 
-  // ── Stripe promise — built from DB publicKey ─────────────────
-  // useMemo so we don't re-create on every render
   const stripePromise = useMemo(() => {
     const key = payConfig?.stripe?.publicKey;
     if (payConfig?.stripe?.enabled && key) {
@@ -136,7 +126,6 @@ function UserWallet() {
     return null;
   }, [payConfig?.stripe?.enabled, payConfig?.stripe?.publicKey]);
 
-  // ── Verify Razorpay payment ───────────────────────────────────
   const verifyRazorpayMutation = useMutation({
     mutationFn: paymentService.verifyRazorpay,
     onSuccess: () => {
@@ -147,15 +136,14 @@ function UserWallet() {
     onError: () => toast.error('Payment verification failed'),
   });
 
-  // ── Open Razorpay checkout ────────────────────────────────────
   const openRazorpay = (resData) => {
     if (!window.Razorpay) {
       toast.error('Razorpay not loaded. Please refresh the page.');
       return;
     }
     new window.Razorpay({
-      key:      resData.key,            // from backend (DB keyId)
-      amount:   resData.amount * 100,   // backend returns rupees, Razorpay needs paise
+      key:      resData.key,           
+      amount:   resData.amount * 100,  
       currency: resData.currency || 'INR',
       order_id: resData.orderId,
       name:     'Digital Marketplace',
@@ -171,7 +159,6 @@ function UserWallet() {
     }).open();
   };
 
-  // ── Init topup (Razorpay order / Stripe intent) ───────────────
   const addFundsMutation = useMutation({
     mutationFn: (payload) =>
       api.post('/wallet/topup/init', payload).then((r) => r.data),
@@ -198,7 +185,6 @@ function UserWallet() {
         provider: 'razorpay',
       });
     } else if (selectedProvider === 'stripe') {
-      // Don't call backend yet — go to card step first
       setStep('stripe-card');
     }
   };
@@ -214,7 +200,6 @@ function UserWallet() {
     queryClient.invalidateQueries(['user-wallet']);
   };
 
-  // ── Table columns ─────────────────────────────────────────────
   const columns = [
     {
       key:    'createdAt',
@@ -309,14 +294,11 @@ function UserWallet() {
         )}
       </div>
 
-      {/* ── Add Funds Modal ── */}
       <Modal isOpen={showAddModal} onClose={closeModal} title="Add Funds to Wallet">
 
-        {/* STEP 1 — Provider + Amount */}
         {step === 'select' && (
           <form onSubmit={handleProceed} className="space-y-5">
 
-            {/* Payment Method */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Payment Method
@@ -334,7 +316,6 @@ function UserWallet() {
               ) : (
                 <div className="space-y-3">
 
-                  {/* Razorpay */}
                   {payConfig?.razorpay?.enabled && (
                     <label className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition
                       ${selectedProvider === 'razorpay'
@@ -357,7 +338,6 @@ function UserWallet() {
                     </label>
                   )}
 
-                  {/* Stripe */}
                   {payConfig?.stripe?.enabled && (
                     <label className={`flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition
                       ${selectedProvider === 'stripe'

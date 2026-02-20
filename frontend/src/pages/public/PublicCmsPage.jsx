@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { cmsService } from '../../services/cms.service';
-import LoadingSpinner from '../../components/common/LoadingSpinner'; // ← import
+import LoadingSpinner from '../../components/common/LoadingSpinner'; 
 
 function PublicCmsPage() {
   const { slug } = useParams();
@@ -11,7 +11,7 @@ function PublicCmsPage() {
     queryFn: () => cmsService.getPageBySlug(slug),
   });
 
-  if (isLoading) return <LoadingSpinner fullScreen />; // ← loader use karo
+  if (isLoading) return <LoadingSpinner fullScreen />; 
   if (!data?.data?.page) return <div>Page not found</div>;
 
   return (

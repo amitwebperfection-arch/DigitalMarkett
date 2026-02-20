@@ -17,11 +17,11 @@ function VendorPendingApproval() {
     try {
       const data = await authService.getProfile();
       
-      // Update Redux and localStorage
+     
       dispatch(setUser({ user: data.user, token }));
       localStorage.setItem('user', JSON.stringify(data.user));
 
-      // ✅ If approved, redirect to vendor dashboard
+      
       if (data.user.role === 'vendor' && data.user.vendorInfo?.status === 'approved') {
         toast.success('Your application has been approved!');
         navigate('/vendor/dashboard');

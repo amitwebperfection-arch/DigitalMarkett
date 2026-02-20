@@ -11,7 +11,6 @@ const vendorMenuItems = [
   { name: 'Earnings', path: '/vendor/earnings', icon: 'DollarSign' },
   { name: 'Payouts', path: '/vendor/payouts', icon: 'Wallet' },
   { name: 'Reviews', path: '/vendor/reviews', icon: 'Star' },
-  // { name: 'Bank Details', path: '/vendor/bank-details', icon: 'CreditCard' },
   { name: 'Profile', path: '/vendor/profile', icon: 'User' },
   { name: 'Support Tickets', path: '/vendor/tickets', icon: 'MessageSquare' }
 ];
@@ -21,14 +20,14 @@ function VendorLayout() {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
+      
       <Sidebar
         menuItems={vendorMenuItems}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
 
-      {/* Main Content */}
+      
       <div className="flex flex-col flex-1 lg:ml-64">
         <Header
           title="Vendor Dashboard"

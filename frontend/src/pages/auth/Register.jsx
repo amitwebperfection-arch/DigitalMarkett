@@ -1,4 +1,3 @@
-// Register.jsx
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
@@ -79,7 +78,6 @@ function RegisterInner() {
     finally { setIsLoading(false); }
   };
 
-  // Google sign up — only for regular users (not vendor)
   const handleGoogleSuccess = async (credentialResponse) => {
     setGoogleLoading(true);
     try {
@@ -130,7 +128,6 @@ function RegisterInner() {
               </button>
             </div>
 
-            {/* Google Sign Up — only for regular users */}
             {accountType === 'user' && (
               <>
                 <div className="mb-3">

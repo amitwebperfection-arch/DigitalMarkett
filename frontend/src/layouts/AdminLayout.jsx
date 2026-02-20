@@ -24,14 +24,13 @@ function AdminLayout() {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
+      
       <Sidebar
         menuItems={adminMenuItems}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
 
-      {/* Main content */}
       <div className="flex flex-col flex-1 lg:ml-64">
         <Header
           title="Admin Dashboard"

@@ -7,12 +7,9 @@ import AdminLayout from '../layouts/AdminLayout';
 import VendorLayout from '../layouts/VendorLayout';
 import UserLayout from '../layouts/UserLayout';
 import AuthLayout from '../layouts/AuthLayout';
-
 import LoadingSpinner from '../components/common/LoadingSpinner';
 
-// ============================================
 // Public Pages
-// ============================================
 const Home = lazy(() => import('../pages/public/Home'));
 const ProductList = lazy(() => import('../pages/public/ProductList'));
 const ProductDetails = lazy(() => import('../pages/public/ProductDetails'));
@@ -22,17 +19,12 @@ const About = lazy(() => import('../pages/public/About'));
 const Contact = lazy(() => import('../pages/public/Contact'));
 const CmsPage = lazy(() => import('../pages/public/PublicCmsPage.jsx'));
 
-
-// ============================================
 // Auth Pages
-// ============================================
 const Login = lazy(() => import('../pages/auth/Login'));
 const Register = lazy(() => import('../pages/auth/Register'));
 const VendorPendingApproval = lazy(() => import('../pages/auth/VendorPendingApproval'));
 
-// ============================================
 // Admin Pages
-// ============================================
 const AdminDashboard = lazy(() => import('../pages/admin/Dashboard'));
 const AdminUsers = lazy(() => import('../pages/admin/Users'));
 const AdminProducts = lazy(() => import('../pages/admin/Products'));
@@ -51,9 +43,7 @@ const AdminAddPage = lazy(() => import('../pages/admin/AddPage'));
 const AdminEditPage = lazy(() => import('../pages/admin/EditPage'));
 
 
-// ============================================
 // Vendor Pages
-// ============================================
 const VendorDashboard = lazy(() => import('../pages/vendor/Dashboard'));
 const VendorProducts = lazy(() => import('../pages/vendor/Products'));
 const VendorAddProduct = lazy(() => import('../pages/vendor/AddProduct'));
@@ -66,9 +56,7 @@ const VendorTicketDetailPage = lazy(() => import('../pages/vendor/TicketDetailPa
 const VendorTicketListPage = lazy(() => import('../pages/vendor/TicketListPage'));
 const VendorProfile = lazy(() => import('../pages/vendor/VendorProfile'));
 
-// ============================================
 // User Pages
-// ============================================
 const UserDashboard = lazy(() => import('../pages/user/Dashboard'));
 const UserOrders = lazy(() => import('../pages/user/Orders'));
 const UserDownloads = lazy(() => import('../pages/user/Downloads'));
@@ -80,19 +68,14 @@ const CreateTicketPage = lazy(() => import('../pages/user/CreateTicketPage'));
 const TicketDetailPage = lazy(() => import('../pages/user/TicketDetailPage'));
 const UserCoupons = lazy(() => import('../pages/user/Coupons'));
 
-// ============================================
 // Error Pages
-// ============================================
 const NotFound = lazy(() => import('../pages/errors/NotFound'));
 
 function AppRoutes() {
   return (
     <Suspense fallback={<LoadingSpinner fullScreen />}>
       <Routes>
-
-        {/* ============================================ */}
-        {/* PUBLIC ROUTES                                */}
-        {/* ============================================ */}
+        {/* PUBLIC ROUTES */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<ProductList />} />
@@ -113,17 +96,13 @@ function AppRoutes() {
           <Route path="/:slug" element={<CmsPage />} />
         </Route>
 
-        {/* ============================================ */}
-        {/* AUTH ROUTES                                  */}
-        {/* ============================================ */}
+        {/* AUTH ROUTES */}
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
         </Route>
 
-        {/* ============================================ */}
-        {/* ADMIN ROUTES                                 */}
-        {/* ============================================ */}
+        {/* ADMIN ROUTES */}
         <Route
           path="/admin"
           element={
@@ -150,9 +129,7 @@ function AppRoutes() {
           <Route path="pages/edit/:id" element={<AdminEditPage />} />
         </Route>
 
-        {/* ============================================ */}
-        {/* VENDOR ROUTES                                */}
-        {/* ============================================ */}
+        {/* VENDOR ROUTES */}
         <Route
           path="/vendor"
           element={
@@ -176,9 +153,7 @@ function AppRoutes() {
           <Route path="pending-approval" element={<VendorPendingApproval />} />
         </Route>
 
-        {/* ============================================ */}
-        {/* USER ROUTES                                  */}
-        {/* ============================================ */}
+        {/* USER ROUTES */}
         <Route
           path="/user"
           element={
@@ -199,9 +174,7 @@ function AppRoutes() {
           <Route path="coupons" element={<UserCoupons />} />
         </Route>
 
-        {/* ============================================ */}
-        {/* 404 NOT FOUND                                */}
-        {/* ============================================ */}
+        {/* 404 NOT FOUND  */}
         <Route path="*" element={<NotFound />} />
 
       </Routes>

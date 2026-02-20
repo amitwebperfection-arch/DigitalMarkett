@@ -4,7 +4,7 @@ const initialState = {
   items: JSON.parse(localStorage.getItem('cart')) || [],
   total: 0,
   coupon: null,
-  isDrawerOpen: false, // 🔥 NEW
+  isDrawerOpen: false, 
 };
 
 const cartSlice = createSlice({
@@ -21,7 +21,7 @@ const cartSlice = createSlice({
         localStorage.setItem('cart', JSON.stringify(state.items));
       }
 
-      // 🔥 ADD TO CART → OPEN DRAWER
+      
       state.isDrawerOpen = true;
     },
 
@@ -54,7 +54,7 @@ const cartSlice = createSlice({
       state.coupon = null;
     },
 
-    // 🔥 DRAWER CONTROLS
+  
     openDrawer: (state) => {
       state.isDrawerOpen = true;
     },

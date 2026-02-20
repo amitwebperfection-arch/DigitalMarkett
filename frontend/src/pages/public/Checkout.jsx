@@ -9,7 +9,7 @@ import { clearCart } from '../../features/cart/cart.slice';
 import toast from 'react-hot-toast';
 import { CreditCard, Wallet, User, MapPin, Search } from 'lucide-react';
 import { allCountries } from './countries';
-import { useSettings, useFormatPrice } from '../../context/SettingsContext'; // ✅ ADD
+import { useSettings, useFormatPrice } from '../../context/SettingsContext'; 
 
 import {
   CardElement,
@@ -22,14 +22,12 @@ function Checkout() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // ✅ ADD: Settings se payment methods, tax, currency lo
   const { paymentMethods, taxEnabled, taxRate } = useSettings();
   const formatPrice = useFormatPrice();
 
   const stripe = useStripe();
   const elements = useElements();
 
-  // Coupon State
   const [couponCode, setCouponCode] = useState('');
   const [discount, setDiscount] = useState(0);
   const [appliedCouponId, setAppliedCouponId] = useState(null);
@@ -44,7 +42,6 @@ function Checkout() {
     }
   }, [paymentMethods?.wallet?.enabled]);
 
-  // Payment State — ✅ CHANGED: pehla enabled method default set karo
   const getDefaultPayment = () => {
     if (paymentMethods?.stripe?.enabled)   return 'stripe';
     if (paymentMethods?.razorpay?.enabled) return 'razorpay';
@@ -55,12 +52,10 @@ function Checkout() {
   const [paymentMethod, setPaymentMethod] = useState(getDefaultPayment);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Personal Details State
   const [personalDetails, setPersonalDetails] = useState({
     firstName: '', lastName: '', email: '', phone: ''
   });
 
-  // Shipping Address State
   const [shippingAddress, setShippingAddress] = useState({
     addressLine1: '', addressLine2: '',
     city: '', state: '', zipCode: '', country: ''
@@ -96,7 +91,6 @@ function Checkout() {
     }
   }, [countrySearch, countries]);
 
-  // ✅ CHANGED: Tax bhi calculate karo settings se
   const subtotal = items.reduce((sum, item) => sum + (item.salePrice || item.price), 0);
   const taxAmount = taxEnabled ? (subtotal * taxRate) / 100 : 0;
   const totalBeforeDiscount = subtotal + taxAmount;
@@ -226,10 +220,10 @@ function Checkout() {
       <h1 className="text-3xl font-bold mb-8">Checkout</h1>
 
       <div className="grid lg:grid-cols-3 gap-8">
-        {/* Left Column - Forms */}
+      
         <div className="lg:col-span-2 space-y-6">
 
-          {/* Personal Details */}
+        
           <div className="border rounded-lg p-6">
             <div className="flex items-center gap-2 mb-6">
               <User className="w-5 h-5 text-primary-600" />
@@ -348,7 +342,7 @@ function Checkout() {
             </div>
           </div>
 
-          {/* Payment Method — ✅ CHANGED: sirf enabled methods dikhao */}
+          
           <div className="border rounded-lg p-6">
             <div className="flex items-center gap-2 mb-6">
               <CreditCard className="w-5 h-5 text-primary-600" />
@@ -356,7 +350,7 @@ function Checkout() {
             </div>
 
             <div className="space-y-4">
-              {/* Stripe — sirf tab dikhao jab enabled ho */}
+    
               {paymentMethods?.stripe?.enabled && (
                 <>
                   <label className="flex items-center gap-3 p-4 border rounded-lg cursor-pointer hover:border-primary-500 transition-colors">
@@ -401,7 +395,7 @@ function Checkout() {
                       {formatPrice(walletBalance)}
                     </span>
                   </label>
-                  {/* ✅ Insufficient balance warning */}
+          
                   {paymentMethod === 'wallet' && walletBalance < finalTotal && (
                     <p className="text-red-500 text-sm mt-1 ml-2">
                       ⚠️ Insufficient balance. Required: {formatPrice(finalTotal)}, Available: {formatPrice(walletBalance)}
@@ -421,7 +415,7 @@ function Checkout() {
                 </label>
               )}
 
-              {/* Koi bhi payment enabled nahi */}
+    
               {!paymentMethods?.stripe?.enabled &&
                !paymentMethods?.razorpay?.enabled &&
                !paymentMethods?.wallet?.enabled &&
@@ -434,7 +428,6 @@ function Checkout() {
           </div>
         </div>
 
-        {/* Right Column - Order Summary */}
         <div className="lg:col-span-1">
           <div className="border rounded-lg p-6 sticky top-4 space-y-4">
             <h2 className="text-xl font-semibold">Order Summary</h2>
@@ -443,7 +436,7 @@ function Checkout() {
               {items.map(item => (
                 <div key={item._id || item.id} className="flex justify-between text-sm border-b pb-2">
                   <span className="flex-1 truncate">{item.title}</span>
-                  {/* ✅ CHANGED: formatPrice se currency symbol + position */}
+        
                   <span className="font-medium ml-2">{formatPrice(item.salePrice || item.price)}</span>
                 </div>
               ))}
@@ -455,7 +448,7 @@ function Checkout() {
                 <span>{formatPrice(subtotal)}</span>
               </div>
 
-              {/* ✅ ADD: Tax row — sirf tab dikhao jab taxEnabled ho */}
+        
               {taxEnabled && taxAmount > 0 && (
                 <div className="flex justify-between text-sm text-gray-600">
                   <span>Tax ({taxRate}%)</span>

@@ -37,9 +37,17 @@ function Navbar() {
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-40">
       <div className="container-custom flex items-center justify-between h-16">
 
-        {/* Logo */}
         <Link to="/" className="text-xl font-bold text-primary-600">
-          Digital Marketplace
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 780 320" width="180" height="74">
+            <path d="M60 60 L60 260 L140 260 Q220 260 220 160 Q220 60 140 60 Z
+                      M110 100 L135 100 Q170 100 170 160 Q170 220 135 220 L110 220 Z" fill="#1AADDC"/>
+            <rect x="155" y="208" width="22" height="32" fill="#1a1a1a"/>
+            <rect x="182" y="185" width="22" height="55" fill="#1a1a1a"/>
+            <rect x="209" y="150" width="22" height="90" fill="#1a1a1a"/>
+            <line x1="155" y1="208" x2="231" y2="150" stroke="#1a1a1a" stroke-width="8" stroke-linecap="round"/>
+            <text x="255" y="170" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="110" fill="#1AADDC" letter-spacing="2">DIGITAL</text>
+            <text x="255" y="255" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="72" fill="#1a1a1a" letter-spacing="4">MARKETING</text>
+          </svg>
         </Link>
 
         {/* Desktop Menu */}

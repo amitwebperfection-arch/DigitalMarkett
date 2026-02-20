@@ -4,7 +4,6 @@ import { useSelector } from 'react-redux';
 function AuthLayout() {
   const { token } = useSelector((state) => state.auth);
 
-  // Agar already logged in hai → home/dashboard bhej do
   if (token) {
     return <Navigate to="/" replace />;
   }

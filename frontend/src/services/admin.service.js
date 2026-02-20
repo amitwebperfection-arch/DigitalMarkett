@@ -60,11 +60,10 @@ export const adminService = {
   },
 
   updateSettings: async (settingsData) => {
-    const { data } = await api.put('/settings', settingsData); // sahi route
+    const { data } = await api.put('/settings', settingsData); 
     return data;
   },
   
-   // Analytics & Charts
   getRevenueChart: async (period = '7days') => {
     const { data } = await api.get('/admin/analytics/revenue', { params: { period } });
     return data;

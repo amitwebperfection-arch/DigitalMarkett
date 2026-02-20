@@ -84,7 +84,7 @@ export function SettingsProvider({ children }) {
 
   const settings = raw ? deepMerge(DEFAULTS, cleanMeta(raw)) : DEFAULTS;
 
-  // CSS variables + custom CSS + dark mode
+
   useEffect(() => {
     const { primaryColor, secondaryColor, customCSS, darkModeEnabled } = settings.appearance || {};
     const root = document.documentElement;
@@ -96,7 +96,6 @@ export function SettingsProvider({ children }) {
     el.textContent = customCSS || '';
   }, [settings.appearance]);
 
-  // Favicon
   useEffect(() => {
     if (!settings.favicon) return;
     let link = document.querySelector("link[rel~='icon']");
@@ -104,14 +103,13 @@ export function SettingsProvider({ children }) {
     link.href = settings.favicon;
   }, [settings.favicon]);
 
-  // Page title + meta description + canonical URL
   useEffect(() => {
     const { metaTitle, metaDescription, canonicalUrl } = settings.seo || {};
 
-    // 1. Document title — metaTitle hai to woh, warna siteName
+    
     document.title = metaTitle || settings.siteName || 'Digital Marketplace';
 
-    // 2. Meta description
+    
     let descEl = document.querySelector('meta[name="description"]');
     if (!descEl) {
       descEl = document.createElement('meta');
@@ -120,7 +118,7 @@ export function SettingsProvider({ children }) {
     }
     descEl.content = metaDescription || '';
 
-    // 3. Canonical URL
+   
     let canonEl = document.querySelector('link[rel="canonical"]');
     if (canonicalUrl) {
       if (!canonEl) {
@@ -130,11 +128,11 @@ export function SettingsProvider({ children }) {
       }
       canonEl.href = canonicalUrl;
     } else if (canonEl) {
-      canonEl.remove(); // canonical nahi hai to tag hata do
+      canonEl.remove(); 
     }
   }, [settings.seo, settings.siteName]);
 
-  // Google Analytics
+  
   useEffect(() => {
     const gaId = settings.seo?.googleAnalyticsId;
     if (!gaId || document.getElementById('ga-script')) return;
@@ -147,7 +145,7 @@ export function SettingsProvider({ children }) {
     document.head.appendChild(s2);
   }, [settings.seo?.googleAnalyticsId]);
 
-  // Facebook Pixel
+  
   useEffect(() => {
     const px = settings.seo?.facebookPixelId;
     if (!px || document.getElementById('fb-pixel')) return;

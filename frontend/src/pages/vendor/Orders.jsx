@@ -7,7 +7,6 @@ import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { format } from 'date-fns';
 import { X, Package, DollarSign, Calendar, User } from 'lucide-react';
 
-// ✅ Order Detail Modal
 function OrderDetailModal({ order, onClose }) {
   if (!order) return null;
 

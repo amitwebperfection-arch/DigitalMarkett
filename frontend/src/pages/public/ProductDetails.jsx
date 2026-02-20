@@ -31,7 +31,7 @@ function ProductDetails() {
 
   const product = data?.product;
 
-  // Get wishlist data
+  
   const { data: wishlistData } = useQuery({
     queryKey: ['user-wishlist'],
     queryFn: userService.getWishlist,
@@ -39,7 +39,7 @@ function ProductDetails() {
     retry: false,
   });
 
-  // Check if product is in wishlist
+  
   useEffect(() => {
     if (wishlistData?.wishlist && product) {
       const inWishlist = wishlistData.wishlist.some(
@@ -49,7 +49,7 @@ function ProductDetails() {
     }
   }, [wishlistData, product]);
 
-  // Wishlist mutations
+  
   const addToWishlistMutation = useMutation({
     mutationFn: userService.addToWishlist,
     onSuccess: () => {
@@ -74,7 +74,6 @@ function ProductDetails() {
     },
   });
 
-  // Fetch reviews
   const { data: reviewData } = useQuery({
     queryKey: ['product-reviews', product?._id],
     enabled: !!product?._id,
@@ -89,7 +88,7 @@ function ProductDetails() {
       ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount).toFixed(1)
       : 0;
 
-  // Fetch related products
+  
   const { data: relatedData } = useQuery({
     enabled: !!product?.category,
     queryKey: ['related-products', product?.category],
@@ -158,19 +157,19 @@ function ProductDetails() {
     );
   }
 
-  // ✅ FIXED: Better image array construction with fallback
+  
   const buildImageGallery = () => {
     const images = [];
     
-    // Add thumbnail first
+    
     if (product.thumbnail) {
       images.push(product.thumbnail);
     }
     
-    // Add additional images
+    
     if (product.images && Array.isArray(product.images)) {
       product.images.forEach(img => {
-        // Handle both object format {url: '...'} and string format
+        
         const imageUrl = typeof img === 'string' ? img : img?.url;
         if (imageUrl && imageUrl !== product.thumbnail) {
           images.push(imageUrl);
@@ -187,7 +186,7 @@ function ProductDetails() {
     ? Math.round(((product.price - product.salePrice) / product.price) * 100)
     : 0;
 
-  // Rating stats
+  
   const ratingStats = [5, 4, 3, 2, 1].map(rating => ({
     stars: rating,
     count: reviews.filter(r => r.rating === rating).length,

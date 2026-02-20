@@ -6,7 +6,6 @@ import Table from '../../components/common/Table';
 import { Plus, Trash2, Edit, X, DollarSign, Download, Tag } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-// ✅ Product Detail Modal
 function ProductDetailModal({ product, onClose, onDelete, onToggle, toggleLoading }) {
   if (!product) return null;
 
@@ -135,7 +134,6 @@ function ProductDetailModal({ product, onClose, onDelete, onToggle, toggleLoadin
   );
 }
 
-// ✅ Mobile Product Card
 function ProductCard({ product, onView, onDelete, onToggle, toggleLoading }) {
   return (
     <div className="bg-white rounded-lg shadow p-4 space-y-3">
@@ -203,7 +201,6 @@ function ProductCard({ product, onView, onDelete, onToggle, toggleLoading }) {
   );
 }
 
-// ✅ Pagination Component
 function Pagination({ currentPage, totalPages, onPageChange }) {
   const pages = [];
   const maxVisible = typeof window !== 'undefined' && window.innerWidth < 768 ? 3 : 5;

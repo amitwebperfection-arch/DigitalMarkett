@@ -23,7 +23,6 @@ function VendorReviews() {
     );
   }
 
-  // Calculate rating distribution
   const ratingDistribution = [5, 4, 3, 2, 1].map(stars => ({
     stars,
     count: data?.reviews?.filter(r => r.rating === stars).length || 0,
@@ -49,7 +48,6 @@ function VendorReviews() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Average Rating Card */}
           <div className="bg-gradient-to-br from-yellow-50 to-orange-50 border-2 border-yellow-200 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-between mb-3">
               <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center shadow-md">

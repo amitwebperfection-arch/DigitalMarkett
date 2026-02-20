@@ -19,14 +19,14 @@ function UserLayout() {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {/* Sidebar */}
+     
       <Sidebar
         menuItems={userMenuItems}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
 
-      {/* Main Content */}
+      
       <div className="flex flex-col flex-1 lg:ml-64">
         <Header
           title="User Dashboard"

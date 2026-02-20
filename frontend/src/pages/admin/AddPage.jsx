@@ -90,53 +90,53 @@ const [editorMode, setEditorMode] = useState('visual');
           </div>
 
           {/* Content Editor */}
-<div className="bg-white p-4 rounded shadow">
-  <label className="block text-sm font-medium mb-2">Content</label>
-  
-  {/* Tab Switch */}
-  <div className="flex gap-2 mb-2 border-b">
-    <button
-      type="button"
-      onClick={() => setEditorMode('visual')}
-      className={`px-3 py-1 text-sm ${editorMode === 'visual' 
-        ? 'border-b-2 border-blue-600 text-blue-600 font-medium' 
-        : 'text-gray-500'}`}
-    >
-      Visual
-    </button>
-    <button
-      type="button"
-      onClick={() => setEditorMode('code')}
-      className={`px-3 py-1 text-sm ${editorMode === 'code' 
-        ? 'border-b-2 border-blue-600 text-blue-600 font-medium' 
-        : 'text-gray-500'}`}
-    >
-      Code / HTML
-    </button>
-  </div>
+          <div className="bg-white p-4 rounded shadow">
+            <label className="block text-sm font-medium mb-2">Content</label>
+            
+            {/* Tab Switch */}
+            <div className="flex gap-2 mb-2 border-b">
+              <button
+                type="button"
+                onClick={() => setEditorMode('visual')}
+                className={`px-3 py-1 text-sm ${editorMode === 'visual' 
+                  ? 'border-b-2 border-blue-600 text-blue-600 font-medium' 
+                  : 'text-gray-500'}`}
+              >
+                Visual
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditorMode('code')}
+                className={`px-3 py-1 text-sm ${editorMode === 'code' 
+                  ? 'border-b-2 border-blue-600 text-blue-600 font-medium' 
+                  : 'text-gray-500'}`}
+              >
+                Code / HTML
+              </button>
+            </div>
 
-  {/* Visual Editor */}
-  {editorMode === 'visual' && (
-    <ReactQuill
-      theme="snow"
-      value={form.content}
-      onChange={(value) => setForm({ ...form, content: value })}
-      modules={modules}
-      className="h-96 mb-12"
-    />
-  )}
+            {/* Visual Editor */}
+            {editorMode === 'visual' && (
+              <ReactQuill
+                theme="snow"
+                value={form.content}
+                onChange={(value) => setForm({ ...form, content: value })}
+                modules={modules}
+                className="h-96 mb-12"
+              />
+            )}
 
-  {/* Code Editor */}
-  {editorMode === 'code' && (
-    <textarea
-      value={form.content}
-      onChange={(e) => setForm({ ...form, content: e.target.value })}
-      rows="16"
-      className="w-full border rounded p-3 font-mono text-sm bg-gray-900 text-green-400"
-      placeholder="<p>HTML code yahan likho...</p>"
-    />
-  )}
-</div>
+            {/* Code Editor */}
+            {editorMode === 'code' && (
+              <textarea
+                value={form.content}
+                onChange={(e) => setForm({ ...form, content: e.target.value })}
+                rows="16"
+                className="w-full border rounded p-3 font-mono text-sm bg-gray-900 text-green-400"
+                placeholder="<p>HTML code yahan likho...</p>"
+              />
+            )}
+          </div>
 
           {/* Excerpt */}
           <div className="bg-white p-4 rounded shadow">

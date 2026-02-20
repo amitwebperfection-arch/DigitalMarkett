@@ -55,7 +55,6 @@ function VendorDashboard() {
   const categoryDistribution = data?.categoryDistribution || [];
   const pendingPayouts = data?.pendingPayouts || 0;
 
-  // Stats Cards Configuration
   const statCards = [
     {
       title: 'Total Revenue',

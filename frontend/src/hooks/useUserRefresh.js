@@ -14,7 +14,7 @@ export const useUserRefresh = () => {
       try {
         const data = await authService.getProfile();
         
-        // Update Redux and localStorage
+      
         dispatch(setUser({ user: data.user, token }));
         localStorage.setItem('user', JSON.stringify(data.user));
       } catch (error) {
@@ -22,10 +22,10 @@ export const useUserRefresh = () => {
       }
     };
 
-    // Refresh on mount
+    
     refreshUserData();
 
-    // ✅ Refresh every 30 seconds to check for status updates
+    
     const interval = setInterval(refreshUserData, 30000);
 
     return () => clearInterval(interval);

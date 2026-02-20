@@ -1,7 +1,6 @@
 import api from './api';
 
 export const productService = {
-  // ✅ Get all PUBLIC products (for home page, shop page)
   getProducts: async (params = {}) => {
     const { data } = await api.get('/products', { params });
     return data;
@@ -11,7 +10,6 @@ export const productService = {
     return data;
   },
 
-  // ✅ ADD THIS: Get VENDOR's own products (for vendor dashboard)
   getVendorProducts: async (params = {}) => {
     const { data } = await api.get('/products/vendor/products', { params });
     return data;
@@ -28,9 +26,6 @@ export const productService = {
   },
 
   createProduct: async (formData) => {
-    
-  
-    
     const { data } = await api.post('/products', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
@@ -41,9 +36,6 @@ export const productService = {
   },
 
   updateProduct: async (id, productData) => {
-    
-    
-    
     const { data } = await api.put(`/products/${id}`, productData, {
       headers: {
         'Content-Type': 'multipart/form-data'
@@ -68,7 +60,6 @@ export const productService = {
     return data;
   },
 
-  // ================= REVIEWS =================
   getProductReviews: async (productId, page = 1, limit = 10) => {
     const { data } = await api.get(
       `/reviews/${productId}?page=${page}&limit=${limit}`

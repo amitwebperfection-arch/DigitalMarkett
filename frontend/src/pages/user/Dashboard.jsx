@@ -23,7 +23,6 @@ import { format } from 'date-fns';
 function UserDashboard() {
   const { user } = useSelector((state) => state.auth);
 
-  // Fetch user dashboard data
   const { data, isLoading, error } = useQuery({
     queryKey: ['user-dashboard'],
     queryFn: userService.getDashboard,
@@ -56,7 +55,6 @@ function UserDashboard() {
     );
   }
 
-  // Safe data extraction with fallbacks
   const stats = data?.stats || {
     totalOrders: 0,
     completedOrders: 0,
@@ -78,7 +76,6 @@ function UserDashboard() {
   }).format(Number(value) || 0);
 };
 
-  // Quick Links Configuration
   const quickLinks = [
     {
       title: 'My Orders',

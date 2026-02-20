@@ -28,7 +28,6 @@ function UserWishlist() {
   });
 
   const handleAddToCart = (product) => {
-    // Dispatch with proper structure that cart expects
     dispatch(addToCart({
       id: product._id,
       title: product.title,
@@ -58,7 +57,6 @@ function UserWishlist() {
           {data.wishlist.map((item) => {
             const product = item.product;
             
-            // Skip if product is null or undefined
             if (!product) return null;
             
             const displayPrice = product.salePrice || product.price;

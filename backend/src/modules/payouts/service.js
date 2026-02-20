@@ -17,7 +17,6 @@ export const requestPayout = async (vendorId, amount, method, accountDetails) =>
     throw new Error('Insufficient available balance');
   }
 
-  // Lock requested amount
   wallet.balance -= amount;
   wallet.lockedBalance += amount;
   await wallet.save();
@@ -36,7 +35,6 @@ export const requestPayout = async (vendorId, amount, method, accountDetails) =>
 
 
 export const getVendorPayouts = async (vendorId, page = 1, limit = 10) => {
-  // ✅ Get user with bank details
   const user = await User.findById(vendorId).select('hasBankDetails bankDetails');
   
   const wallet = await Wallet.findOne({ user: vendorId });
@@ -56,7 +54,7 @@ export const getVendorPayouts = async (vendorId, page = 1, limit = 10) => {
     totalPages: Math.ceil(total / limit),
     availableBalance,
     hasBankDetails: user?.hasBankDetails || false,
-    bankDetails: user?.bankDetails || null  // ✅ Add this
+    bankDetails: user?.bankDetails || null  
   };
 };
 
@@ -85,7 +83,6 @@ export const processPayout = async (payoutId, adminId, status, notes = '') => {
     throw new Error('Payout already processed');
   }
 
-  // Only deduct from wallet when completing the payout
   if (status === 'completed') {
   await Wallet.findOneAndUpdate(
     { user: payout.vendor },

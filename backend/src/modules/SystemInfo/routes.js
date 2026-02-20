@@ -6,18 +6,15 @@ import { protect, restrictTo } from '../../middlewares/auth.js';
 
 const router = express.Router();
 
-// Get __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// System info endpoint - Using your existing auth middleware
 router.get('/system-info', protect, restrictTo('admin'), (req, res) => {
   
   try {
     let backendPkg = {};
     let frontendPkg = {};
     
-    // Try different path configurations
     const possibleBackendPaths = [
       path.join(__dirname, '../../package.json'),
       path.join(__dirname, '../package.json'),
@@ -31,7 +28,6 @@ router.get('/system-info', protect, restrictTo('admin'), (req, res) => {
       path.join(process.cwd(), 'frontend/package.json'),
     ];
 
-    // Find and read backend package.json
     for (const pkgPath of possibleBackendPaths) {
       if (fs.existsSync(pkgPath)) {
         backendPkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
@@ -39,7 +35,6 @@ router.get('/system-info', protect, restrictTo('admin'), (req, res) => {
       }
     }
 
-    // Find and read frontend package.json
     for (const pkgPath of possibleFrontendPaths) {
       if (fs.existsSync(pkgPath)) {
         frontendPkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
@@ -47,7 +42,6 @@ router.get('/system-info', protect, restrictTo('admin'), (req, res) => {
       }
     }
 
-    // System info
     const systemInfo = {
       appName: backendPkg.name || 'MERN Marketplace',
       appVersion: backendPkg.version || '1.0.0',
@@ -87,7 +81,6 @@ router.get('/system-info', protect, restrictTo('admin'), (req, res) => {
   }
 });
 
-// Test endpoint without auth
 router.get('/test', (req, res) => {
   res.json({ 
     message: 'System route is working!',
@@ -95,7 +88,6 @@ router.get('/test', (req, res) => {
   });
 });
 
-// Auth test endpoint - to verify authentication works
 router.get('/auth-test', protect, restrictTo('admin'), (req, res) => {
   res.json({
     message: 'Authentication successful!',

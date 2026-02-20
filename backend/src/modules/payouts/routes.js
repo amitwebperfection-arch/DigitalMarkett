@@ -9,7 +9,6 @@ router.use(protect);
 router.get('/my', restrictTo('vendor'), payoutController.getMyPayouts);
 router.post('/request', restrictTo('vendor'), payoutController.requestPayout); 
 
-// Admin routes
 router.get('/all', restrictTo('admin'), payoutController.getAllPayouts);
 router.put('/:id/process', restrictTo('admin'), payoutController.processPayout);
 

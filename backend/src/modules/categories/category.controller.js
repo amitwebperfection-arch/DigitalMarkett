@@ -2,14 +2,11 @@ import Category from './category.model.js';
 import { uploadToCloudinary } from '../../config/s3.js';
 import Product from '../products/model.js';
 
-
-// Create category
 export const createCategory = async (req, res, next) => {
   try {
 
     let iconUrl = null;
 
-    // Upload icon to Cloudinary
     if (req.files?.icon?.[0]) {
       const result = await uploadToCloudinary(
         req.files.icon[0], 
@@ -17,7 +14,6 @@ export const createCategory = async (req, res, next) => {
       );
       iconUrl = result.secure_url;
     } else if (req.file) {
-      // Handle single file upload
       const result = await uploadToCloudinary(
         req.file, 
         'categories/icons'
@@ -32,7 +28,6 @@ export const createCategory = async (req, res, next) => {
       });
     }
 
-    // Create category
     const category = await Category.create({
       name: req.body.name,
       description: req.body.description,
@@ -66,7 +61,6 @@ export const getCategories = async (req, res, next) => {
 
     const matchStage = {};
 
-    // 🔍 Search filter
     if (search) {
       matchStage.$or = [
         { name: { $regex: search, $options: 'i' } },
@@ -74,21 +68,17 @@ export const getCategories = async (req, res, next) => {
       ];
     }
 
-    // 📢 Published filter
     if (published !== undefined) {
       matchStage.published = published === 'true';
     }
 
-    // 🌳 Parent filter
     if (parent === 'null' || parent === 'only') {
       matchStage.parent = null;
     }
 
     const categories = await Category.aggregate([
-      // 1️⃣ Category filters
       { $match: matchStage },
 
-      // 2️⃣ Lookup parent category details
       {
         $lookup: {
           from: 'categories',
@@ -97,8 +87,6 @@ export const getCategories = async (req, res, next) => {
           as: 'parentDetails'
         }
       },
-
-      // 3️⃣ Add parent info
       {
         $addFields: {
           parentInfo: {
@@ -110,8 +98,6 @@ export const getCategories = async (req, res, next) => {
           }
         }
       },
-
-      // 4️⃣ Products join
       {
         $lookup: {
           from: 'products',
@@ -120,8 +106,6 @@ export const getCategories = async (req, res, next) => {
           as: 'products'
         }
       },
-
-      // 5️⃣ Count published products
       {
         $addFields: {
           count: {
@@ -135,8 +119,6 @@ export const getCategories = async (req, res, next) => {
           }
         }
       },
-
-      // 6️⃣ Cleanup and reshape
       {
         $project: {
           _id: 1,
@@ -162,8 +144,6 @@ export const getCategories = async (req, res, next) => {
           }
         }
       },
-
-      // 7️⃣ Sorting
       {
         $sort: { order: 1, createdAt: -1 }
       }
@@ -179,7 +159,7 @@ export const getCategories = async (req, res, next) => {
     next(error);
   }
 };
-// Get single category by ID
+
 export const getCategoryById = async (req, res, next) => {
   try {
     const category = await Category.findById(req.params.id)
@@ -202,7 +182,6 @@ export const getCategoryById = async (req, res, next) => {
   }
 };
 
-// Get category by slug
 export const getCategoryBySlug = async (req, res, next) => {
   try {
     const category = await Category.findOne({ slug: req.params.slug })
@@ -225,7 +204,6 @@ export const getCategoryBySlug = async (req, res, next) => {
   }
 };
 
-// Update category
 export const updateCategory = async (req, res, next) => {
   try {
 
@@ -238,14 +216,12 @@ export const updateCategory = async (req, res, next) => {
       });
     }
 
-    // Update icon if new one is uploaded
     if (req.files?.icon?.[0] || req.file) {
       const file = req.files?.icon?.[0] || req.file;
       const result = await uploadToCloudinary(file, 'categories/icons');
       category.icon = result.secure_url;
     }
 
-    // Update other fields
     if (req.body.name) category.name = req.body.name;
     if (req.body.description) category.description = req.body.description;
     if (req.body.published !== undefined) {
@@ -279,7 +255,6 @@ export const updateCategory = async (req, res, next) => {
   }
 };
 
-// Delete category
 export const deleteCategory = async (req, res, next) => {
   try {
     const category = await Category.findById(req.params.id);
@@ -291,7 +266,6 @@ export const deleteCategory = async (req, res, next) => {
       });
     }
 
-    // Check if category has children
     const hasChildren = await Category.exists({ parent: category._id });
     
     if (hasChildren) {
@@ -315,7 +289,6 @@ export const deleteCategory = async (req, res, next) => {
   }
 };
 
-// Bulk delete categories
 export const bulkDeleteCategories = async (req, res, next) => {
   try {
     const { ids } = req.body;
@@ -327,7 +300,6 @@ export const bulkDeleteCategories = async (req, res, next) => {
       });
     }
 
-    // Check if any category has children
     const hasChildren = await Category.exists({ 
       parent: { $in: ids } 
     });
@@ -354,7 +326,6 @@ export const bulkDeleteCategories = async (req, res, next) => {
   }
 };
 
-// Toggle category published status
 export const togglePublished = async (req, res, next) => {
   try {
     const category = await Category.findById(req.params.id);
@@ -379,14 +350,11 @@ export const togglePublished = async (req, res, next) => {
   }
 };
 
-// Get category tree (with subcategories)
 export const getCategoryTree = async (req, res, next) => {
   try {
-    // Get all published parent categories
     const parents = await Category.find({ parent: null, published: true })
       .sort({ order: 1, name: 1 });
 
-    // For each parent, get its children
     const tree = await Promise.all(
       parents.map(async (parent) => {
         const children = await Category.find({ 
@@ -411,7 +379,6 @@ export const getCategoryTree = async (req, res, next) => {
   }
 };
 
-// Get subcategories of a parent
 export const getSubcategories = async (req, res, next) => {
   try {
     const subcategories = await Category.find({ 

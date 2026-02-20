@@ -1,4 +1,3 @@
-// src/modules/wishlist/controller.js
 import * as wishlistService from './service.js';
 
 export const getWishlist = async (req, res, next) => {

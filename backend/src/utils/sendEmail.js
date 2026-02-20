@@ -1,6 +1,5 @@
-import { sendEmail as mailSend } from '../config/mail.js'; // mailSend = SMTP email function
+import { sendEmail as mailSend } from '../config/mail.js'; 
 
-// Order confirmation email
 export const sendOrderConfirmation = async (userEmail, orderDetails) => {
   const html = `
     <h2>Order Confirmation</h2>
@@ -16,7 +15,6 @@ export const sendOrderConfirmation = async (userEmail, orderDetails) => {
   });
 };
 
-// Vendor notification email
 export const sendVendorNotification = async (vendorEmail, productTitle) => {
   const html = `
     <h2>New Sale!</h2>
@@ -30,7 +28,6 @@ export const sendVendorNotification = async (vendorEmail, productTitle) => {
   });
 };
 
-// Password reset email
 export const sendPasswordReset = async (email, resetUrl) => {
   const html = `
     <h2>Password Reset Request</h2>
@@ -45,10 +42,9 @@ export const sendPasswordReset = async (email, resetUrl) => {
   });
 };
 
-// Contact form notification (Admin)
 export const sendContactNotification = async ({ name, email, subject, message }) => {
   await sendEmail({
-    to: FROM_EMAIL, // your SMTP inbox
+    to: FROM_EMAIL, 
     subject: `New Contact: ${subject}`,
     html: `
       <h2>New Contact Message</h2>

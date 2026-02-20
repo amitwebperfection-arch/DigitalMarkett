@@ -39,16 +39,13 @@ const categorySchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Add virtual for ID display
 categorySchema.virtual('id').get(function() {
   return this._id.toString().slice(-4).toUpperCase();
 });
 
-// Ensure virtuals are included in JSON
 categorySchema.set('toJSON', { virtuals: true });
 categorySchema.set('toObject', { virtuals: true });
 
-// Pre-save hook to generate slug
 categorySchema.pre('save', async function(next) {
   if (this.isModified('name')) {
     const slugify = (text) => {

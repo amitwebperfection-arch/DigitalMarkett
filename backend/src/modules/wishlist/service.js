@@ -1,4 +1,3 @@
-// src/modules/wishlist/service.js
 import Wishlist from './model.js';
 
 export const getUserWishlist = async (userId) => {

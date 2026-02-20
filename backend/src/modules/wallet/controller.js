@@ -53,7 +53,7 @@ export const initWalletTopup = async (req, res, next) => {
         orderId: order.id,
         amount: order.amount / 100,
         currency: order.currency,
-        key: config.razorpay.keyId,  // ✅ Public key
+        key: config.razorpay.keyId, 
       });
     }
 
@@ -62,7 +62,7 @@ export const initWalletTopup = async (req, res, next) => {
         success: true,
         provider: 'stripe',
         topupId: topup._id,
-        clientSecret: order.client_secret,  // ✅ Stripe secret
+        clientSecret: order.client_secret, 
       });
     }
   } catch (err) { next(err); }

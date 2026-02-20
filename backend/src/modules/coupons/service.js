@@ -11,15 +11,15 @@ export const applyCoupon = async (code, cartTotal, productIds, userId) => {
 
   if (!coupon) throw new Error('Invalid or expired coupon');
 
-  // 🔐 Usage limit
   if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit) {
     throw new Error('Coupon usage limit reached');
   }
 
-  // 🧠 USER DATA
   const ordersCount = await Order.countDocuments({ user: userId });
 
-  // ================= RULE CHECKS =================
+  if (coupon.usedBy?.includes(userId)) {
+    throw new Error('You have already used this coupon');
+  }
 
   if (coupon.rules?.newUser && ordersCount > 0) {
     throw new Error('Coupon only for new users');
@@ -46,8 +46,6 @@ export const applyCoupon = async (code, cartTotal, productIds, userId) => {
     }
   }
 
-  // ================= PRODUCT CHECK =================
-
   if (coupon.applicableProducts.length > 0) {
     const hasApplicableProduct = productIds.some(id =>
       coupon.applicableProducts.map(p => p.toString()).includes(id)
@@ -56,8 +54,6 @@ export const applyCoupon = async (code, cartTotal, productIds, userId) => {
       throw new Error('Coupon not applicable to selected products');
     }
   }
-
-  // ================= DISCOUNT =================
 
   let discount = 0;
 
@@ -78,11 +74,9 @@ export const applyCoupon = async (code, cartTotal, productIds, userId) => {
   };
 };
 
-// ✅ NEW: Get active coupons eligible for a user
 export const getActiveCoupons = async (userId) => {
   const now = new Date();
   
-  // Get all active, non-expired coupons
   const coupons = await Coupon.find({
     isActive: true,
     expiresAt: { $gt: now },
@@ -92,19 +86,12 @@ export const getActiveCoupons = async (userId) => {
     ]
   }).select('-createdBy -__v');
 
-  // Get user's order count for filtering
   const ordersCount = await Order.countDocuments({ user: userId });
   const lastOrder = await Order.findOne({ user: userId }).sort({ createdAt: -1 });
 
-  // Filter based on rules
   const eligibleCoupons = coupons.filter(coupon => {
-    // New user check
     if (coupon.rules?.newUser && ordersCount > 0) return false;
-
-    // Min orders check
     if (coupon.rules?.minOrders && ordersCount < coupon.rules.minOrders) return false;
-
-    // Inactive days check
     if (coupon.rules?.inactiveDays && lastOrder) {
       const daysSinceLastOrder = (Date.now() - new Date(lastOrder.createdAt)) / (1000 * 60 * 60 * 24);
       if (daysSinceLastOrder < coupon.rules.inactiveDays) return false;
@@ -138,8 +125,11 @@ export const getCoupons = async (page = 1, limit = 10) => {
   return { coupons, total, page, pages: Math.ceil(total / limit) };
 };
 
-export const incrementCouponUsage = async (couponId) => {
-  await Coupon.findByIdAndUpdate(couponId, { $inc: { usedCount: 1 } });
+export const incrementCouponUsage = async (couponId, userId) => {
+  await Coupon.findByIdAndUpdate(couponId, { 
+    $inc: { usedCount: 1 },
+    $addToSet: { usedBy: userId } 
+  });
 };
 
 export const deleteCoupon = async (couponId) => {

@@ -3,10 +3,8 @@ import User from './model.js';
 import { sendEmail } from '../../config/mail.js';
 import crypto from 'crypto';
 
-// Store OTPs temporarily (in production, use Redis)
 const otpStore = new Map();
 
-// Generate 6-digit OTP
 const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
@@ -15,7 +13,6 @@ export const register = async (req, res, next) => {
   try {
     const { name, email, password, accountType, businessName, description } = req.body;
 
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ 
@@ -24,10 +21,8 @@ export const register = async (req, res, next) => {
       });
     }
 
-    // Generate OTP
     const otp = generateOTP();
     
-    // Store OTP with user data (expires in 10 minutes)
     otpStore.set(email, {
       otp,
       name,
@@ -38,7 +33,7 @@ export const register = async (req, res, next) => {
       expiresAt: Date.now() + 10 * 60 * 1000
     });
 
-    // Send OTP email
+    
     await sendEmail({
       to: email,
       subject: 'Email Verification - OTP',
@@ -83,7 +78,6 @@ export const verifyOTP = async (req, res, next) => {
   try {
     const { email, otp } = req.body;
 
-    // Get stored OTP data
     const otpData = otpStore.get(email);
 
     if (!otpData) {
@@ -93,7 +87,6 @@ export const verifyOTP = async (req, res, next) => {
       });
     }
 
-    // Check if OTP expired
     if (Date.now() > otpData.expiresAt) {
       otpStore.delete(email);
       return res.status(400).json({
@@ -102,7 +95,6 @@ export const verifyOTP = async (req, res, next) => {
       });
     }
 
-    // Verify OTP
     if (otpData.otp !== otp) {
       return res.status(400).json({
         success: false,
@@ -110,7 +102,6 @@ export const verifyOTP = async (req, res, next) => {
       });
     }
 
-    // Create user
     const userData = {
       name: otpData.name,
       email,
@@ -142,7 +133,6 @@ export const verifyOTP = async (req, res, next) => {
       maxAge: 30 * 24 * 60 * 60 * 1000
     });
 
-    // Clear OTP from store
     otpStore.delete(email);
 
     res.status(201).json({
@@ -167,7 +157,6 @@ export const resendOTP = async (req, res, next) => {
   try {
     const { email } = req.body;
 
-    // Get stored data
     const otpData = otpStore.get(email);
 
     if (!otpData) {
@@ -177,17 +166,14 @@ export const resendOTP = async (req, res, next) => {
       });
     }
 
-    // Generate new OTP
     const newOtp = generateOTP();
 
-    // Update OTP and expiry
     otpStore.set(email, {
       ...otpData,
       otp: newOtp,
       expiresAt: Date.now() + 10 * 60 * 1000
     });
 
-    // Send OTP email
     await sendEmail({
       to: email,
       subject: 'Email Verification - New OTP',
@@ -233,7 +219,6 @@ export const login = async (req, res, next) => {
       });
     }
 
-    // ✅ FIX: Check vendorInfo status properly
     if (user.vendorInfo && user.vendorInfo.status === 'pending') {
       return res.status(403).json({
         success: false,
@@ -249,7 +234,6 @@ export const login = async (req, res, next) => {
       });
     }
 
-    // ✅ Only approved vendors can login as vendors
     const token = authService.generateToken(user._id);
     const refreshToken = authService.generateRefreshToken(user._id);
 

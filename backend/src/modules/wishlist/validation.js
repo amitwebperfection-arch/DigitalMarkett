@@ -1,4 +1,3 @@
-// src/modules/wishlist/validation.js
 import Joi from 'joi';
 
 export const addWishlistSchema = Joi.object({

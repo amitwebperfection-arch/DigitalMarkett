@@ -11,7 +11,6 @@ export const createProduct = async (req, res, next) => {
       files: []
     };
 
-    // ========== Upload Thumbnail ==========
     if (req.files?.thumbnail?.[0]) {
       const result = await uploadToCloudinary(
         req.files.thumbnail[0], 
@@ -20,7 +19,6 @@ export const createProduct = async (req, res, next) => {
       uploadedData.thumbnail = result.secure_url;
     }
 
-    // ========== Upload Additional Images ==========
     if (req.files?.images?.length > 0) {
       const imagePromises = req.files.images.map(file => 
         uploadToCloudinary(file, 'products/gallery')
@@ -32,7 +30,6 @@ export const createProduct = async (req, res, next) => {
       }));
     }
 
-    // ========== Upload Product Files ==========
     if (req.files?.files?.length > 0) {
       const filePromises = req.files.files.map(file => 
         uploadToCloudinary(file, 'products/files')
@@ -46,7 +43,6 @@ export const createProduct = async (req, res, next) => {
       }));
     }
 
-    // ========== Parse Changelog ==========
     let changelog = [];
     if (req.body.changelog) {
       try {
@@ -56,7 +52,6 @@ export const createProduct = async (req, res, next) => {
       }
     }
 
-    // ========== Prepare Product Data ==========
     const productData = {
       ...req.body,
       thumbnail: uploadedData.thumbnail,
@@ -65,7 +60,6 @@ export const createProduct = async (req, res, next) => {
       changelog
     };
 
-    // Create product
     const product = await productService.createProduct(productData, req.user.id);
 
     res.status(201).json({ 
@@ -104,7 +98,6 @@ export const updateProduct = async (req, res, next) => {
 
     const uploadedData = {};
 
-    // Upload new thumbnail if provided
     if (req.files?.thumbnail?.[0]) {
       const result = await uploadToCloudinary(
         req.files.thumbnail[0], 
@@ -113,7 +106,6 @@ export const updateProduct = async (req, res, next) => {
       uploadedData.thumbnail = result.secure_url;
     }
 
-    // Upload additional images if provided
     if (req.files?.images?.length > 0) {
       const imagePromises = req.files.images.map(file => 
         uploadToCloudinary(file, 'products/gallery')
@@ -125,7 +117,6 @@ export const updateProduct = async (req, res, next) => {
       }));
     }
 
-    // Upload new files if provided
     if (req.files?.files?.length > 0) {
       const filePromises = req.files.files.map(file => 
         uploadToCloudinary(file, 'products/files')
@@ -139,7 +130,6 @@ export const updateProduct = async (req, res, next) => {
       }));
     }
 
-    // Parse changelog if provided
     if (req.body.changelog) {
       try {
         uploadedData.changelog = JSON.parse(req.body.changelog);
@@ -148,7 +138,6 @@ export const updateProduct = async (req, res, next) => {
       }
     }
 
-    // Merge uploaded data with request body
     const updates = {
       ...req.body,
       ...uploadedData
@@ -201,7 +190,6 @@ export const getVendorProduct = async (req, res) => {
   res.json({ success: true, product });
 };
 
-// ✅ FIXED: Now toggles published field correctly
 export const togglePublished = async (req, res, next) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -210,15 +198,12 @@ export const togglePublished = async (req, res, next) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    // Vendor can toggle only own product
     if (
       req.user.role === 'vendor' &&
       product.vendor.toString() !== req.user._id.toString()
     ) {
       return res.status(403).json({ message: 'Not allowed' });
     }
-
-    // ✅ Toggle published field (not status)
     product.published = !product.published;
 
     await product.save();

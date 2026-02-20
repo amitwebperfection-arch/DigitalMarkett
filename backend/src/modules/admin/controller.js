@@ -50,7 +50,7 @@ export const deleteUser = async (req, res, next) => {
   }
 };
 
-// ✅ NEW: Get vendors
+
 export const getVendors = async (req, res, next) => {
   try {
     const { page = 1, limit = 10, search = '' } = req.query;
@@ -72,7 +72,6 @@ export const suspendVendor = async (req, res, next) => {
 };
 
 
-// ✅ NEW: Get payouts
 export const getPayouts = async (req, res, next) => {
   try {
     const { page = 1, limit = 10, status } = req.query;
@@ -83,7 +82,6 @@ export const getPayouts = async (req, res, next) => {
   }
 };
 
-// ✅ NEW: Process payout
 export const processPayout = async (req, res, next) => {
   try {
     const payout = await adminService.processPayout(req.params.id);
@@ -92,41 +90,6 @@ export const processPayout = async (req, res, next) => {
     next(error);
   }
 };
-
-// export const getSettings = async (req, res, next) => {
-//   try {
-//     let settings = await Settings.findOne();
-
-//     if (!settings) {
-//       settings = await Settings.create({
-//         siteName: 'My Store',
-//         siteEmail: 'admin@example.com',
-//         commissionRate: 10,
-//         currency: 'USD',
-//         payoutThreshold: 50,
-//         maintenanceMode: false
-//       });
-//     }
-
-//     res.json({ success: true, ...settings.toObject() });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
-
-// export const updateSettings = async (req, res, next) => {
-//   try {
-//     const settings = await Settings.findOneAndUpdate(
-//       {},
-//       req.body,
-//       { new: true, upsert: true }
-//     );
-
-//     res.json({ success: true, ...settings.toObject() });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
 
 export const getAllMessages = async (req, res) => {
   try {
@@ -151,23 +114,19 @@ export const getAdminProducts = async (req, res) => {
     
     const skip = (page - 1) * limit;
     
-    // Build filter query
     const filter = {};
     if (status && status !== 'all') {
       filter.status = status;
     }
 
-    // Get products with filter
     const products = await Product.find(filter)
       .populate('vendor', 'name email')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit));
 
-    // Get total count for pagination
     const total = await Product.countDocuments(filter);
     
-    // Get counts for each status (for the stats cards)
     const [pendingCount, approvedCount, rejectedCount] = await Promise.all([
       Product.countDocuments({ status: 'pending' }),
       Product.countDocuments({ status: 'approved' }),

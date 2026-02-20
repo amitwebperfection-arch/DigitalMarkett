@@ -67,9 +67,7 @@ export const downloadFile = async (req, res, next) => {
       return res.status(404).json({ message: 'File not found' });
     }
 
-    const file = license.product.files[0]; // first file
-
-    // 🔥 STREAM FILE FROM CLOUDINARY
+    const file = license.product.files[0]; 
     const response = await axios.get(file.url, {
       responseType: 'stream'
     });
@@ -83,7 +81,7 @@ export const downloadFile = async (req, res, next) => {
       file.type || 'application/octet-stream'
     );
 
-    response.data.pipe(res); // 🔥 NO CORRUPTION
+    response.data.pipe(res); 
   } catch (err) {
     next(err);
   }

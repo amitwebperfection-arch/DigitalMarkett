@@ -19,7 +19,6 @@ const wishlistSchema = new mongoose.Schema(
   }
 );
 
-// Compound index to prevent duplicates
 wishlistSchema.index({ user: 1, product: 1 }, { unique: true });
 
 export default mongoose.model('Wishlist', wishlistSchema);

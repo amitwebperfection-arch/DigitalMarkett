@@ -2,7 +2,7 @@ import Page from './model.js';
 import { slugify } from '../../utils/slugify.js';
 
 export const createPage = async (pageData, authorId) => {
-  const slug = pageData.slug || slugify(pageData.title); // ← frontend slug lo
+  const slug = pageData.slug || slugify(pageData.title);
 
   const page = await Page.create({
     ...pageData,
@@ -32,7 +32,7 @@ export const updatePage = async (pageId, updates) => {
   }
 
   if (updates.status === 'draft') {
-    updates.publishedAt = null; // ← draft pe publishedAt clear karo
+    updates.publishedAt = null; 
   }
 
   return await Page.findByIdAndUpdate(

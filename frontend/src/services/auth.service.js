@@ -1,4 +1,3 @@
-// src/services/auth.service.js
 import api from './api';
 
 export const authService = {
@@ -22,7 +21,6 @@ export const authService = {
     return data;
   },
 
-  // ✅ Google OAuth
   googleAuth: async (credential) => {
     const { data } = await api.post('/auth/google', { credential });
     return data;
@@ -49,7 +47,7 @@ export const authService = {
   },
 
   updateProfile: async (data) => {
-    const response = await api.put('/user/profile', data);
+    const response = await api.put('/auth/profile', data);
     return response.data;
   },
 

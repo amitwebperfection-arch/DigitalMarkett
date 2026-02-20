@@ -1,4 +1,3 @@
-// src/modules/wishlist/routes.js
 import express from 'express';
 import { getWishlist, addToWishlist, removeFromWishlist } from './controller.js';
 import { protect } from '../../middlewares/auth.js';

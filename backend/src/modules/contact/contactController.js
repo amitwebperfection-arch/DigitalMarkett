@@ -9,10 +9,8 @@ export const createMessage = async (req, res) => {
       return res.status(400).json({ success: false, message: 'All fields are required' });
     }
 
-    // Save message in DB
     const savedMessage = await ContactMessage.create({ name, email, subject, message });
 
-    // Send email notification to your SMTP inbox
     await sendContactNotification({ name, email, subject, message });
 
     res.status(201).json({ success: true, message: 'Message sent successfully' });

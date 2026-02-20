@@ -1,4 +1,3 @@
-// src/modules/auth/model.js
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
@@ -19,12 +18,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     minlength: 6,
     select: false
-    // ✅ NOT required — Google users won't have a password
   },
   googleId: {
     type: String,
     unique: true,
-    sparse: true  // allows multiple null values (non-Google users)
+    sparse: true  
   },
   role: {
     type: String,
@@ -72,7 +70,6 @@ const userSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// ✅ Only hash password if it exists and was modified
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password') || !this.password) return next();
   this.password = await bcrypt.hash(this.password, 12);
@@ -80,7 +77,7 @@ userSchema.pre('save', async function(next) {
 });
 
 userSchema.methods.comparePassword = async function(candidatePassword) {
-  if (!this.password) return false; // Google users have no password
+  if (!this.password) return false; 
   return await bcrypt.compare(candidatePassword, this.password);
 };
 

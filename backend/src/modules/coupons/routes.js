@@ -4,11 +4,9 @@ import { protect, restrictTo } from '../../middlewares/auth.js';
 
 const router = express.Router();
 
-// ✅ User routes (protected)
 router.post('/apply', protect, couponController.applyCoupon);
-router.get('/active', protect, couponController.getActiveCoupons); // ✅ NEW
+router.get('/active', protect, couponController.getActiveCoupons); 
 
-// ✅ Admin routes
 router.use(protect, restrictTo('admin'));
 router.post('/', couponController.createCoupon);
 router.get('/', couponController.getCoupons);

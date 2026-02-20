@@ -11,10 +11,9 @@ export const applyForVendor = async (req, res, next) => {
   }
 };
 
-// ✅ CHANGE THIS FUNCTION
+
 export const getDashboard = async (req, res, next) => {
   try {
-    // Change from getVendorDashboard to getVendorDashboard (check your service.js exports)
     const dashboardData = await vendorService.getVendorDashboard(req.user.id);
     res.json({ success: true, ...dashboardData });
   } catch (error) {
@@ -56,15 +55,12 @@ export const requestPayout = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
 
-    // ✅ Check bank details
     if (!user.hasBankDetails) {
       return res.status(400).json({
         success: false,
         message: 'Please add bank details first'
       });
     }
-
-    // ✅ Get wallet
     const wallet = await Wallet.findOne({ user: req.user.id });
     
     if (!wallet || wallet.balance < 10) {
@@ -74,7 +70,6 @@ export const requestPayout = async (req, res, next) => {
       });
     }
 
-    // ✅ Import payoutService at top of file
     const payoutService = await import('../payouts/service.js');
     
     const payout = await payoutService.requestPayout(
@@ -112,7 +107,6 @@ export const updateBankDetails = async (req, res, next) => {
   try {
     const { accountHolderName, bankName, accountNumber, ifscCode, upiId } = req.body;
 
-    // ✅ Validation
     if (!accountHolderName || !bankName || !accountNumber || !ifscCode) {
       return res.status(400).json({
         success: false,
@@ -129,7 +123,6 @@ export const updateBankDetails = async (req, res, next) => {
       });
     }
 
-    // ✅ Update bank details
     user.bankDetails = {
       accountHolderName,
       bankName,
@@ -138,7 +131,6 @@ export const updateBankDetails = async (req, res, next) => {
       upiId: upiId || ''
     };
 
-    // ✅ CRITICAL: Set hasBankDetails flag to true
     user.hasBankDetails = true;
 
     await user.save();
@@ -147,7 +139,7 @@ export const updateBankDetails = async (req, res, next) => {
       success: true,
       message: 'Bank details updated successfully',
       bankDetails: user.bankDetails,
-      hasBankDetails: user.hasBankDetails  // ✅ Return this
+      hasBankDetails: user.hasBankDetails  
     });
   } catch (error) {
     next(error);

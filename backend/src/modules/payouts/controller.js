@@ -23,7 +23,7 @@ export const requestPayout = async (req, res, next) => {
 
     const payout = await payoutService.requestPayout(
   req.user.id,
-  wallet.balance, // or frontend amount
+  wallet.balance, 
   user.bankDetails?.upiId ? 'upi' : 'bank_transfer',
   user.bankDetails
 );

@@ -355,24 +355,20 @@ export const approveVendor = async (userId) => {
     throw new Error('User not found');
   }
 
-  // ✅ FIX: More lenient check - just check if vendorInfo exists
   if (!user.vendorInfo) {
     throw new Error('No vendor application found');
   }
 
-  // ✅ Allow approval even if already approved (idempotent)
   if (user.vendorInfo.status === 'approved' && user.role === 'vendor') {
-    return user; // Already approved, just return
+    return user;
   }
 
-  // ✅ Set role and status
   user.role = 'vendor';
   user.vendorInfo.status = 'approved';
   user.vendorInfo.approvedAt = new Date();
   
   await user.save();
 
-  // Send approval email (keep existing code)
   try {
     await sendEmail({
       to: user.email,
@@ -424,7 +420,6 @@ export const approveVendor = async (userId) => {
     });
   } catch (emailError) {
     console.error('Failed to send approval email:', emailError);
-    // Don't throw error, approval was successful
   }
 
   return user;
@@ -444,7 +439,6 @@ export const rejectVendor = async (userId) => {
   user.vendorInfo.status = 'rejected';
   await user.save();
 
-  // Send rejection email (keep existing code)
   try {
     await sendEmail({
       to: user.email,

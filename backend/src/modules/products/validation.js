@@ -7,7 +7,6 @@ export const validateProduct = (req, res, next) => {
     shortDescription: Joi.string().max(300).allow(''),
     price: Joi.number().min(0).required(),
     salePrice: Joi.number().min(0).allow('').allow(null),
-    // ✅ Accept any string for category (will be validated in service)
     category: Joi.string().required(),
     tags: Joi.alternatives().try(
       Joi.array().items(Joi.string()),
@@ -21,7 +20,7 @@ export const validateProduct = (req, res, next) => {
       Joi.array().items(Joi.string()),
       Joi.string()
     ).allow(''),
-    changelog: Joi.string().allow(''), // JSON string
+    changelog: Joi.string().allow(''), 
     featured: Joi.alternatives().try(
       Joi.boolean(),
       Joi.string().valid('true', 'false')

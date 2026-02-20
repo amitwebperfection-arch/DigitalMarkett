@@ -3,7 +3,6 @@ import * as settingsService from './service.js';
 export const getSettings = async (req, res, next) => {
   try {
     const settings = await settingsService.getSettings();
-    // Flat spread so frontend can do settings.siteName directly
     res.json({ success: true, ...settings.toObject() });
   } catch (error) {
     next(error);

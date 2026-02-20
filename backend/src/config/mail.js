@@ -30,7 +30,6 @@ const getSmtpConfig = async () => {
   }
 };
 
-// ─── Email Notifications check karo ───────────────────────────
 export const isNotificationEnabled = async (type) => {
   try {
     const settings = await Settings.findOne().lean();
@@ -49,7 +48,6 @@ export const isNotificationEnabled = async (type) => {
   }
 };
 
-// ─── Main sendEmail function ───────────────────────────────────
 export const sendEmail = async ({ to, subject, html, text, type = null }) => {
   if (type) {
     const enabled = await isNotificationEnabled(type);

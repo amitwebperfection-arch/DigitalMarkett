@@ -2,7 +2,6 @@ import mongoose from 'mongoose';
 
 const settingsSchema = new mongoose.Schema(
   {
-    // ─── GENERAL ───────────────────────────────────────────────
     siteName: { type: String, default: 'Digital Marketplace' },
     siteTagline: { type: String, default: '' },
     siteDescription: { type: String, default: '' },
@@ -15,7 +14,6 @@ const settingsSchema = new mongoose.Schema(
     maintenanceMode: { type: Boolean, default: false },
     maintenanceMessage: { type: String, default: 'We are under maintenance. Be back soon!' },
 
-    // ─── COMMERCE ──────────────────────────────────────────────
     commissionRate: { type: Number, default: 10, min: 0, max: 100 },
     currency: { type: String, default: 'USD' },
     currencySymbol: { type: String, default: '$' },
@@ -26,8 +24,6 @@ const settingsSchema = new mongoose.Schema(
     taxRate: { type: Number, default: 0, min: 0, max: 100 },
     allowGuestCheckout: { type: Boolean, default: true },
     maxCartItems: { type: Number, default: 20 },
-
-    // ─── PAYMENT ───────────────────────────────────────────────
     paymentMethods: {
       stripe: {
         enabled: { type: Boolean, default: false },
@@ -47,7 +43,6 @@ const settingsSchema = new mongoose.Schema(
       },
     },
 
-    // ─── EMAIL / SMTP ───────────────────────────────────────────
     smtp: {
       host: { type: String, default: '' },
       port: { type: Number, default: 587 },
@@ -64,7 +59,6 @@ const settingsSchema = new mongoose.Schema(
       welcomeEmail: { type: Boolean, default: true },
     },
 
-    // ─── VENDOR ────────────────────────────────────────────────
     vendorSettings: {
       autoApproveVendors: { type: Boolean, default: false },
       autoApproveProducts: { type: Boolean, default: false },
@@ -77,7 +71,6 @@ const settingsSchema = new mongoose.Schema(
       maxFileSizeMB: { type: Number, default: 500 },
     },
 
-    // ─── SEO ───────────────────────────────────────────────────
     seo: {
       metaTitle: { type: String, default: '' },
       metaDescription: { type: String, default: '' },
@@ -87,7 +80,6 @@ const settingsSchema = new mongoose.Schema(
       canonicalUrl: { type: String, default: '' },
     },
 
-    // ─── SOCIAL ────────────────────────────────────────────────
     socialLinks: {
       facebook: { type: String, default: '' },
       twitter: { type: String, default: '' },
@@ -97,7 +89,6 @@ const settingsSchema = new mongoose.Schema(
       github: { type: String, default: '' },
     },
 
-    // ─── SECURITY ──────────────────────────────────────────────
     security: {
       maxLoginAttempts: { type: Number, default: 5 },
       sessionTimeoutMinutes: { type: Number, default: 60 },
@@ -105,7 +96,6 @@ const settingsSchema = new mongoose.Schema(
       allowedAdminIPs: { type: [String], default: [] },
     },
 
-    // ─── APPEARANCE ────────────────────────────────────────────
     appearance: {
       primaryColor: { type: String, default: '#3B82F6' },
       secondaryColor: { type: String, default: '#8B5CF6' },

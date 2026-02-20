@@ -13,7 +13,6 @@ export const updateSettings = async (updates) => {
   if (!settings) {
     settings = await Settings.create(updates);
   } else {
-    // Deep merge for nested objects
     const merge = (target, source) => {
       for (const key of Object.keys(source)) {
         if (

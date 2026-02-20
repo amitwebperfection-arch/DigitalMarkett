@@ -1,10 +1,10 @@
 import api from './api';
 
 export const adminService = {
- getDashboard: async () => {
-  const { data } = await api.get('/admin/dashboard');
-  return data.stats; // ✅ ONLY stats return karo
-},
+  getDashboard: async () => {
+    const { data } = await api.get('/admin/dashboard');
+    return data.stats; 
+  },
 
   getUsers: async (params = {}) => {
     const { data } = await api.get('/admin/users', { params });
@@ -26,24 +26,6 @@ export const adminService = {
     return data;
   },
 
-  // ✅ Vendors
-  // getVendors: async (params = {}) => {
-  //   const { data } = await api.get('/admin/vendors', { params });
-  //   return data;
-  // },
-
-  // approveVendor: async (id) => {
-  //   const { data } = await api.put(`/admin/vendors/${id}/approve`);
-  //   return data;
-  // },
-
-  // suspendVendor: async (id) => {
-  //   const { data } = await api.put(`/admin/vendors/${id}/suspend`);
-  //   return data;
-  // },
-
-  
-  // Vendors
   getVendors: async (params) => {
     const { data } = await api.get('/admin/vendors', { params });
     return data;
@@ -64,28 +46,16 @@ export const adminService = {
     return data;
   },
 
-  // ✅ Payouts
-  // getPayouts: async (params = {}) => {
-  //   const { data } = await api.get('/admin/payouts', { params });
-  //   return data;
-  // },
   getPayouts: ({ page, limit }) =>
   api.get('/payouts/all', {
     params: { page, limit }
   }).then(res => res.data),
 
-processPayout: (id, body) =>
-  api.put(`/payouts/${id}/process`, body).then(res => res.data),
+  processPayout: (id, body) =>
+    api.put(`/payouts/${id}/process`, body).then(res => res.data),
 
-
-  // processPayout: async (id) => {
-  //   const { data } = await api.put(`/admin/payouts/${id}/process`);
-  //   return data;
-  // },
-
-  // Settings
   getSettings: async () => {
-    const { data } = await api.get('/admin/settings');
+    const { data } = await api.get('/settings');
     return data;
   },
 

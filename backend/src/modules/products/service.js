@@ -6,12 +6,10 @@ import Review from '../reviews/model.js';
 export const createProduct = async (productData, vendorId) => {
   const slug = slugify(productData.title);
   
-  // Handle tags if string
   if (typeof productData.tags === 'string') {
     productData.tags = productData.tags.split(',').map(t => t.trim()).filter(Boolean);
   }
 
-  // Handle compatibleWith if string
   if (typeof productData.compatibleWith === 'string') {
     productData.compatibleWith = productData.compatibleWith
       .split(',')
@@ -19,12 +17,10 @@ export const createProduct = async (productData, vendorId) => {
       .filter(Boolean);
   }
 
-  // Convert featured to boolean
   if (typeof productData.featured === 'string') {
     productData.featured = productData.featured === 'true';
   }
 
-  // ✅ FIX: Validate category exists and convert to slug if needed
   if (productData.category) {
     const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(productData.category);
     
@@ -59,7 +55,6 @@ export const createProduct = async (productData, vendorId) => {
     ...productData,
     slug,
     vendor: vendorId,
-    // Initialize rating
     rating: {
       average: 0,
       count: 0
@@ -74,12 +69,10 @@ export const getProducts = async (filters = {}, page = 1, limit = 12) => {
 
   const query = {};
 
-  // ✅ FIX: Filter by vendor if provided
   if (vendor) {
     query.vendor = vendor;
   }
 
-  // ✅ NEW: Filter by published status if provided
   if (published !== undefined) {
     query.published = published === 'true' || published === true;
   }
@@ -99,14 +92,12 @@ export const getProducts = async (filters = {}, page = 1, limit = 12) => {
     query.$text = { $search: search };
   }
 
-  // ✅ CRITICAL: For public product listings, only show approved & published
-  // This happens when vendor filter is NOT present (public page)
   if (!vendor) {
     query.status = 'approved';
     query.published = true;
   }
 
-let sortOption = { createdAt: -1 }; // default latest
+let sortOption = { createdAt: -1 }; 
 
 if (sort) {
   if (sort.startsWith('-')) {
@@ -149,7 +140,7 @@ const products = await Product.find(query)
 
 export const getProductBySlug = async (slug) => {
   const product = await Product.findOne({ slug, status: 'approved' })
-    .select('+rating') // Ensure rating is included
+    .select('+rating') 
     .populate('vendor', 'name vendorInfo.businessName avatar')
     .lean();
 
@@ -157,7 +148,6 @@ export const getProductBySlug = async (slug) => {
     return null;
   }
 
-  // ✅ Ensure rating exists
   return {
     ...product,
     rating: product.rating || { average: 0, count: 0 }
@@ -171,7 +161,6 @@ export const updateProduct = async (productId, vendorId, updates) => {
     throw new Error('Product not found or unauthorized');
   }
 
-  // Handle arrays from strings
   if (typeof updates.tags === 'string') {
     updates.tags = updates.tags.split(',').map(t => t.trim()).filter(Boolean);
   }
@@ -187,7 +176,6 @@ export const updateProduct = async (productId, vendorId, updates) => {
     updates.featured = updates.featured === 'true';
   }
 
-  // ✅ FIX: Validate category exists and convert to slug if needed
   if (updates.category) {
     const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(updates.category);
     
@@ -216,7 +204,6 @@ export const updateProduct = async (productId, vendorId, updates) => {
     }
   }
 
-  // Merge images and files (append new ones, don't replace)
   if (updates.images?.length > 0) {
     updates.images = [...(product.images || []), ...updates.images];
   }
@@ -276,12 +263,11 @@ export const getRelatedProducts = async (category, limit = 4) => {
     status: 'approved',
     published: true
   })
-    .select('+rating') // Ensure rating is included
+    .select('+rating') 
     .limit(limit)
     .sort({ createdAt: -1 })
     .lean();
 
-  // ✅ Ensure rating exists on all products
   return products.map(product => ({
     ...product,
     rating: product.rating || { average: 0, count: 0 }

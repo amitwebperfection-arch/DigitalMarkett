@@ -6,7 +6,6 @@ import { FRONTEND_URL } from './config/env.js';
 import { errorHandler } from './middlewares/error.js';
 import { rateLimiter } from './middlewares/rateLimit.js';
 
-// Routes
 import authRoutes from './modules/auth/routes.js';
 import userRoutes from './modules/users/routes.js';
 import adminRoutes from './modules/admin/routes.js';
@@ -32,35 +31,28 @@ const app = express();
 
 app.set('trust proxy', 1);
 
-// Security
 app.use(helmet());
 app.use(cors({
   origin: FRONTEND_URL,
   credentials: true
 }));
 
-
-// Stripe webhook must be raw
 app.use(
   '/api/payments/webhook',
   express.raw({ type: 'application/json' })
 );
 
-// Then normal JSON/body parsing for other routes
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 
 app.use(cookieParser());
 
-// Rate limiter (webhook ke baad)
 app.use('/api/', rateLimiter);
 
-// Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
@@ -96,12 +88,10 @@ app.get('/robots.txt', async (req, res) => {
   }
 });
 
-// 404
 app.use('*', (req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
-// Error handler
 app.use(errorHandler);
 
 export default app;

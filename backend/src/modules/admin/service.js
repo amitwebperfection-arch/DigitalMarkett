@@ -5,7 +5,6 @@ import Payout from '../payouts/model.js';
 import Review from '../reviews/model.js';
 import mongoose from 'mongoose';
 
-// Helper functions for date
 const startOfMonth = (date) => {
   return new Date(date.getFullYear(), date.getMonth(), 1);
 };
@@ -29,13 +28,11 @@ const getDaysAgo = (days) => {
 };
 
 export const getDashboardStats = async () => {
-  // Basic counts
   const totalUsers = await User.countDocuments({ role: 'user' });
   const totalVendors = await User.countDocuments({ role: 'vendor' });
   const totalProducts = await Product.countDocuments();
   const totalOrders = await Order.countDocuments({ status: 'completed' });
 
-  // Monthly revenue
   const monthStart = startOfMonth(new Date());
   const monthEnd = endOfMonth(new Date());
 
@@ -54,16 +51,13 @@ export const getDashboardStats = async () => {
     }
   ]);
 
-  // Total revenue (all time)
   const totalRevenueAgg = await Order.aggregate([
     { $match: { status: 'completed' } },
     { $group: { _id: null, total: { $sum: '$total' } } }
   ]);
 
-  // Pending orders
   const pendingOrders = await Order.countDocuments({ status: 'pending' });
 
-  // Completed today
   const todayStart = startOfDay(new Date());
   const todayEnd = endOfDay(new Date());
   const completedToday = await Order.countDocuments({
@@ -71,16 +65,13 @@ export const getDashboardStats = async () => {
     createdAt: { $gte: todayStart, $lte: todayEnd }
   });
 
-  // Pending product approvals
   const pendingApprovals = await Product.countDocuments({ status: 'pending' });
 
-  // Pending payouts
   const pendingPayoutsAgg = await Payout.aggregate([
     { $match: { status: 'pending' } },
     { $group: { _id: null, total: { $sum: '$amount' } } }
   ]);
 
-  // Revenue chart (last 7 days)
   const sevenDaysAgo = getDaysAgo(7);
   const revenueChart = await Order.aggregate([
     {
@@ -99,7 +90,7 @@ export const getDashboardStats = async () => {
     { $sort: { _id: 1 } },
     {
       $project: {
-        name: { $substr: ['$_id', 5, -1] }, // MM-DD format
+        name: { $substr: ['$_id', 5, -1] }, 
         revenue: 1,
         orders: 1,
         _id: 0
@@ -107,7 +98,6 @@ export const getDashboardStats = async () => {
     }
   ]);
 
-  // Category distribution
   const categoryChart = await Product.aggregate([
     {
       $group: {
@@ -124,14 +114,12 @@ export const getDashboardStats = async () => {
     }
   ]);
 
-  // Add colors to categories
   const COLORS = ['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#EC4899'];
   const categoryChartWithColors = categoryChart.map((cat, idx) => ({
     ...cat,
     color: COLORS[idx % COLORS.length]
   }));
 
-  // Order status trends (last 7 days)
   const orderStatusChart = await Order.aggregate([
     { $match: { createdAt: { $gte: sevenDaysAgo } } },
     {
@@ -146,10 +134,9 @@ export const getDashboardStats = async () => {
     { $sort: { '_id.date': 1 } }
   ]);
 
-  // Format order status data for chart
   const daysMap = {};
   orderStatusChart.forEach(item => {
-    const day = item._id.date.substr(5); // MM-DD
+    const day = item._id.date.substr(5); 
     if (!daysMap[day]) {
       daysMap[day] = { name: day, pending: 0, processing: 0, completed: 0, cancelled: 0 };
     }
@@ -157,7 +144,6 @@ export const getDashboardStats = async () => {
   });
   const orderStatusChartFormatted = Object.values(daysMap);
 
-  // Top products
   const topProducts = await Order.aggregate([
     { $match: { status: 'completed' } },
     { $unwind: '$items' },
@@ -189,8 +175,6 @@ export const getDashboardStats = async () => {
     }
   ]);
 
-  // Recent activity - you can implement this based on your needs
-  // For now, getting recent orders and products
   const recentOrders = await Order.find()
     .sort({ createdAt: -1 })
     .limit(2)
@@ -221,7 +205,6 @@ export const getDashboardStats = async () => {
     .select('createdAt')
     .lean();
 
-  // Format recent activity
   const recentActivity = [];
 
   recentOrders.forEach(order => {
@@ -269,7 +252,6 @@ export const getDashboardStats = async () => {
     });
   });
 
-  // Sort by time and limit to 5
   recentActivity.sort((a, b) => {
     const timeA = parseTimeAgo(a.time);
     const timeB = parseTimeAgo(b.time);
@@ -288,7 +270,6 @@ export const getDashboardStats = async () => {
       completedToday,
       pendingApprovals,
       pendingPayouts: pendingPayoutsAgg[0]?.total || 0,
-      // Trends (you can calculate these based on previous period comparison)
       revenueTrend: '+12.5%',
       ordersTrend: '+8.3%',
       productsTrend: '+5.2%',
@@ -302,7 +283,6 @@ export const getDashboardStats = async () => {
   };
 };
 
-// Helper function to get time ago
 function getTimeAgo(date) {
   const seconds = Math.floor((new Date() - new Date(date)) / 1000);
   
@@ -324,7 +304,6 @@ function getTimeAgo(date) {
   return Math.floor(seconds) + ' sec' + (seconds > 1 ? 's' : '') + ' ago';
 }
 
-// Helper to parse time ago for sorting
 function parseTimeAgo(timeStr) {
   const match = timeStr.match(/(\d+)\s+(sec|min|hour|day|month|year)/);
   if (!match) return 999999;
@@ -344,7 +323,6 @@ function parseTimeAgo(timeStr) {
   return value * multipliers[unit];
 }
 
-// Keep all other existing functions...
 export const getAllUsers = async (page = 1, limit = 10, search = '') => {
   const query = search ? {
     $or: [

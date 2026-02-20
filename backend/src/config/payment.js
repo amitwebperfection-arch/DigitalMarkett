@@ -61,13 +61,11 @@ export const razorpay = async () => {
   });
 };
 
-// ─── Check if payment method is enabled ───────────────────────
 export const isPaymentEnabled = async (method) => {
   const config = await getPaymentConfig();
   return config[method]?.enabled ?? false;
 };
 
-// ─── Create Stripe Payment Intent ─────────────────────────────
 export const createStripePaymentIntent = async (
   amount,
   currency = 'usd',
@@ -81,7 +79,6 @@ export const createStripePaymentIntent = async (
 };
 
 
-// ─── Create Razorpay Order ─────────────────────────────────────
 export const createRazorpayOrder = async (amount, currency = 'INR', receipt) => {
   const razorpayInstance = await razorpay();
   return razorpayInstance.orders.create({
@@ -91,7 +88,6 @@ export const createRazorpayOrder = async (amount, currency = 'INR', receipt) => 
   });
 };
 
-// ─── Get payment config for frontend (no secret keys) ─────────
 export const getPublicPaymentConfig = async () => {
   const config = await getPaymentConfig();
   return {

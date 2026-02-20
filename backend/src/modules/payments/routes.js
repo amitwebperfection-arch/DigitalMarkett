@@ -5,7 +5,6 @@ import { getPublicPaymentConfig } from '../../config/payment.js';
 
 const router = express.Router();
 
-// ✅ Public route - no auth needed
 router.get('/config', async (req, res, next) => {
   try {
     const config = await getPublicPaymentConfig();

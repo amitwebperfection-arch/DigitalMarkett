@@ -6,7 +6,6 @@ import { COMMISSION_RATE } from '../../config/env.js';
 import { sendEmail } from '../../config/mail.js';
 import Settings from '../settings/model.js';
 
-// Generate a unique license key
 const generateLicenseKey = () => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const segments = 4;
@@ -22,7 +21,6 @@ const generateLicenseKey = () => {
   return key;
 };
 
-// ─── Send Order Confirmation Email to User ────────────────────
 const sendOrderConfirmationEmail = async (order, userEmail, userName) => {
   try {
     const settings = await Settings.findOne().lean();
@@ -130,7 +128,6 @@ const sendOrderConfirmationEmail = async (order, userEmail, userName) => {
   }
 };
 
-// ─── Send New Order Notification to Admin ─────────────────────
 const sendAdminOrderNotification = async (order, userEmail, userName) => {
   try {
     const settings = await Settings.findOne().lean();
@@ -219,7 +216,7 @@ const sendAdminOrderNotification = async (order, userEmail, userName) => {
       to: adminEmail,
       subject: `🛒 New Order #${order._id.toString().slice(-8).toUpperCase()} - ${currencySymbol}${order.total.toFixed(2)}`,
       html,
-      type: 'orderConfirmation' // Using same notification type
+      type: 'orderConfirmation' 
     });
   } catch (error) {
     console.error('❌ Error sending admin order notification:', error);
@@ -238,7 +235,6 @@ export const createOrder = async (
   let subtotal = 0;
   const orderItems = [];
 
-  // Validate required fields
   if (!personalDetails || !personalDetails.firstName || !personalDetails.email) {
     throw new Error('Personal details are required');
   }
@@ -294,7 +290,6 @@ export const createOrder = async (
 
   const total = subtotal - discount;
 
-  // Create order
   const order = await Order.create({
     user: userId,
     items: orderItems,
@@ -322,28 +317,16 @@ export const createOrder = async (
     paymentStatus: 'pending'
   });
 
-  // ✅ Increment salesCount for each product in the order
   for (const item of orderItems) {
     const product = await Product.findById(item.product);
     if (product) {
-      product.salesCount += 1; // for digital downloads, quantity is 1
+      product.salesCount += 1; 
       await product.save();
     }
   }
 
-  // ✅ Send emails (async, don't block order creation)
   const userName = `${personalDetails.firstName} ${personalDetails.lastName}`;
   const userEmail = personalDetails.email;
-
-  // Send order confirmation to user
-  sendOrderConfirmationEmail(order, userEmail, userName).catch(err => {
-    console.error('Failed to send order confirmation:', err);
-  });
-
-  // Send notification to admin
-  sendAdminOrderNotification(order, userEmail, userName).catch(err => {
-    console.error('Failed to send admin notification:', err);
-  });
 
   return order;
 };
@@ -365,7 +348,7 @@ export const completeOrder = async (orderId, paymentId) => {
       throw new Error('Order already completed');
     }
 
-    order.status = 'completed'; // Set to processing instead of completed
+    order.status = 'completed'; 
     order.paymentStatus = 'completed';
     order.paymentId = paymentId;
     await order.save({ session });
@@ -417,6 +400,23 @@ export const completeOrder = async (orderId, paymentId) => {
 
     await session.commitTransaction();
     session.endSession();
+
+    if (order.coupon) {
+      const { incrementCouponUsage } = await import('../coupons/service.js');
+      await incrementCouponUsage(order.coupon.toString(), order.user.toString());
+    }
+
+    const populatedOrder = await Order.findById(orderId).populate('items.product');
+    const userName = `${populatedOrder.personalDetails.firstName} ${populatedOrder.personalDetails.lastName}`;
+    const userEmail = populatedOrder.personalDetails.email;
+
+    sendOrderConfirmationEmail(populatedOrder, userEmail, userName).catch(err => {
+      console.error('Failed to send order confirmation:', err);
+    });
+
+    sendAdminOrderNotification(populatedOrder, userEmail, userName).catch(err => {
+      console.error('Failed to send admin notification:', err);
+    });
     return order;
 
   } catch (error) {

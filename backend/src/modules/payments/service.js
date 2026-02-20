@@ -6,36 +6,39 @@ import { addFunds } from '../wallet/service.js';
 
 export const createPaymentIntent = async (orderId, method = 'stripe') => {
   const order = await Order.findById(orderId);
-
-  if (!order) {
-    throw new Error('Order not found');
-  }
+  if (!order) throw new Error('Order not found');
 
   if (method === 'stripe') {
     const paymentIntent = await createStripePaymentIntent(
-      order.total,
-      'usd',
-      { orderId: order._id.toString() }
+      order.total, 'usd', { orderId: order._id.toString() }
     );
-
     return {
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id
     };
+
   } else if (method === 'razorpay') {
     const razorpayOrder = await createRazorpayOrder(
-      order.total,
-      'INR',
-      order._id.toString()
+      order.total, 'INR', order._id.toString()
     );
-
     return {
       orderId: razorpayOrder.id,
       amount: razorpayOrder.amount,
       currency: razorpayOrder.currency
     };
+
+  } else if (method === 'wallet') {
+    const { deductFunds } = await import('../wallet/service.js');
+    await deductFunds(
+      order.user.toString(),
+      order.total,
+      `Order #${order._id.toString().slice(-8).toUpperCase()}`
+    );
+    await completeOrder(orderId, 'wallet-payment');
+    return { success: true };
   }
 };
+
 export const handleStripeWebhook = async (signature, rawBody) => {
   let event;
 
@@ -54,12 +57,10 @@ export const handleStripeWebhook = async (signature, rawBody) => {
     if (event.type === 'payment_intent.succeeded') {
       const pi = event.data.object;
 
-      // --- ORDER FLOW ---
       if (pi.metadata?.orderId) {
         await completeOrder(pi.metadata.orderId, pi.id);
       }
 
-      // --- WALLET TOPUP FLOW ---
       if (pi.metadata?.topupId) {
         const topup = await WalletTopup.findById(pi.metadata.topupId);
         if (!topup || topup.status === 'success') return { received: true };

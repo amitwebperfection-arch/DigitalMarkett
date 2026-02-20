@@ -34,6 +34,16 @@ function Checkout() {
   const [discount, setDiscount] = useState(0);
   const [appliedCouponId, setAppliedCouponId] = useState(null);
 
+  const [walletBalance, setWalletBalance] = useState(0);
+
+  useEffect(() => {
+    if (paymentMethods?.wallet?.enabled) {
+      api.get('/wallet/transactions').then(res => {
+        setWalletBalance(res.data.balance || 0);
+      }).catch(() => {});
+    }
+  }, [paymentMethods?.wallet?.enabled]);
+
   // Payment State — ✅ CHANGED: pehla enabled method default set karo
   const getDefaultPayment = () => {
     if (paymentMethods?.stripe?.enabled)   return 'stripe';
@@ -151,6 +161,11 @@ function Checkout() {
     if (!validateForm()) return;
     if (paymentMethod === 'stripe' && (!stripe || !elements)) {
       toast.error('Stripe not loaded'); return;
+    }
+    if (paymentMethod === 'wallet' && walletBalance < finalTotal) {
+      toast.error(`Insufficient wallet balance. Available: ${formatPrice(walletBalance)}`);
+      setIsProcessing(false);
+      return;
     }
     setIsProcessing(true);
     try {
@@ -372,16 +387,27 @@ function Checkout() {
                 </label>
               )}
 
-              {/* Wallet */}
+              {/* wallet */}
               {paymentMethods?.wallet?.enabled && (
-                <label className="flex items-center gap-3 p-4 border rounded-lg cursor-pointer hover:border-primary-500 transition-colors">
-                  <input type="radio" name="payment" value="wallet"
-                    checked={paymentMethod === 'wallet'}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="w-4 h-4 text-primary-600" />
-                  <Wallet className="w-5 h-5" />
-                  <span>Wallet</span>
-                </label>
+                <div>
+                  <label className="flex items-center gap-3 p-4 border rounded-lg cursor-pointer hover:border-primary-500 transition-colors">
+                    <input type="radio" name="payment" value="wallet"
+                      checked={paymentMethod === 'wallet'}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      className="w-4 h-4 text-primary-600" />
+                    <Wallet className="w-5 h-5" />
+                    <span>Wallet</span>
+                    <span className="ml-auto text-sm font-medium text-green-600">
+                      {formatPrice(walletBalance)}
+                    </span>
+                  </label>
+                  {/* ✅ Insufficient balance warning */}
+                  {paymentMethod === 'wallet' && walletBalance < finalTotal && (
+                    <p className="text-red-500 text-sm mt-1 ml-2">
+                      ⚠️ Insufficient balance. Required: {formatPrice(finalTotal)}, Available: {formatPrice(walletBalance)}
+                    </p>
+                  )}
+                </div>
               )}
 
               {/* COD */}

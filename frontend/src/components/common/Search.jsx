@@ -78,7 +78,6 @@ function Search() {
           search: searchQuery,
           limit: 6
         });
-        console.log('🔍 Search Results:', result);
         return result;
       } catch (error) {
         console.error('Search error:', error);
@@ -456,7 +455,7 @@ function Search() {
         </div>
       )}
 
-      <style jsx>{`
+      <style>{`
         @keyframes slide-down {
           from {
             opacity: 0;

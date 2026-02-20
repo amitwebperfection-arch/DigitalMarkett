@@ -20,25 +20,20 @@ export const getUserDashboard = async (userId) => {
   const Wishlist = (await import('../wishlist/model.js')).default;
   const Wallet = (await import('../wallet/model.js')).default;
   
-  // Get wallet balance
   let wallet = await Wallet.findOne({ user: userId });
   if (!wallet) {
     wallet = await Wallet.create({ user: userId, balance: 0 });
   }
   const walletBalance = wallet.balance || 0;
 
-  // Get all orders
   const orders = await Order.find({ user: userId }).sort({ createdAt: -1 });
   
-  // Get all downloads/licenses
   const downloads = await License.find({ user: userId })
     .populate('product', 'title thumbnail files')
     .sort({ createdAt: -1 });
   
-  // Get wishlist count
   const wishlistCount = await Wishlist.countDocuments({ user: userId });
 
-  // Calculate stats
   const totalOrders = orders.length;
   const completedOrders = orders.filter(o => o.status === 'completed').length;
   const activeOrders = orders.filter(o => ['pending', 'processing'].includes(o.status)).length;
@@ -46,7 +41,6 @@ export const getUserDashboard = async (userId) => {
     .filter(o => o.status === 'completed')
     .reduce((sum, order) => sum + Number(order.total || 0), 0);
 
-  // Recent orders (last 5)
   const recentOrders = orders.slice(0, 5).map(order => ({
     _id: order._id,
     orderNumber: order.orderNumber,
@@ -55,7 +49,6 @@ export const getUserDashboard = async (userId) => {
     createdAt: order.createdAt
   }));
 
-  // Recent downloads (last 5)
   const recentDownloads = downloads.slice(0, 5).map(license => ({
     _id: license._id,
     product: license.product,
@@ -70,7 +63,7 @@ export const getUserDashboard = async (userId) => {
       totalSpent,
       totalDownloads: downloads.length,
       wishlistCount,
-      spentTrend: '+12%', // Can be calculated based on previous period
+      spentTrend: '+12%', 
     },
     walletBalance,
     recentOrders,
@@ -95,7 +88,6 @@ export const getUserOrders = async (userId, page = 1, limit = 10) => {
 export const getUserDownloads = async (userId) => {
   const License = (await import('../licenses/model.js')).default;
   
-  // 👉 Populate product with all necessary fields including files and thumbnail
   const licenses = await License.find({ user: userId, status: 'active' })
     .populate({
       path: 'product',
@@ -103,6 +95,5 @@ export const getUserDownloads = async (userId) => {
     })
     .sort({ createdAt: -1 });
   
-  // Filter out licenses where product was deleted
   return licenses.filter(license => license.product !== null);
 };

@@ -13,9 +13,6 @@ router.get('/reviews', vendorController.getReviews);
 router.get('/payouts', vendorController.getPayouts);
 router.post('/payouts/request', vendorController.requestPayout);
 router.put('/bank-details', vendorController.updateBankDetails);
-
-
-// Admin only
 router.use(restrictTo('admin'));
 router.put('/approve/:id', vendorController.approveVendor);
 router.put('/reject/:id', vendorController.rejectVendor);

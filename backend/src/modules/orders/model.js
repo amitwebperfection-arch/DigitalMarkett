@@ -18,7 +18,6 @@ const orderSchema = new mongoose.Schema({
     platformFee: Number
   }],
   
-  // Personal Details
   personalDetails: {
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
@@ -26,7 +25,6 @@ const orderSchema = new mongoose.Schema({
     phone: { type: String, required: true }
   },
   
-  // Shipping Address
   shippingAddress: {
     addressLine1: { type: String, required: true },
     addressLine2: String,
@@ -50,7 +48,7 @@ const orderSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    enum: ['stripe', 'razorpay', 'wallet'],
+    enum: ['stripe', 'razorpay', 'wallet', 'cod'],
     required: true
   },
   paymentStatus: {
@@ -65,7 +63,6 @@ const orderSchema = new mongoose.Schema({
     default: 'pending'
   },
   
-  // Coupon tracking
   coupon: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Coupon'

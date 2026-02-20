@@ -1,4 +1,3 @@
-// run once with `node adminCreate.js`
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import User from './src/modules/auth/model.js';
@@ -9,7 +8,6 @@ await mongoose.connect(process.env.MONGO_URI);
 console.log('MongoDB connected');
 
 const createAdmin = async () => {
-  // safety check (duplicate admin avoid)
   const exists = await User.findOne({ email: 'admin@gmail.com' });
   if (exists) {
     console.log('Admin already exists');

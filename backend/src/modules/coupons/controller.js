@@ -37,7 +37,6 @@ export const applyCoupon = async (req, res, next) => {
   }
 };
 
-// ✅ NEW: Get active coupons for logged-in user
 export const getActiveCoupons = async (req, res, next) => {
   try {
     const userId = req.user.id;

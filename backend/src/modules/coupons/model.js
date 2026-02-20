@@ -17,6 +17,10 @@ const couponSchema = new mongoose.Schema({
     required: true,
     min: 0
   },
+  usedBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
   rules: {
     newUser: {
       type: Boolean,

@@ -2,7 +2,6 @@ import mongoose from 'mongoose';
 import Order from './model.js';
 import Product from '../products/model.js';
 import Wallet from '../wallet/model.js';
-import { COMMISSION_RATE } from '../../config/env.js';
 import { sendEmail } from '../../config/mail.js';
 import Settings from '../settings/model.js';
 
@@ -243,6 +242,12 @@ export const createOrder = async (
     throw new Error('Shipping address is required');
   }
 
+  // ✅ DB se commission rate lo
+  const settings = await Settings.findOne().lean();
+  const commissionRate = settings?.commissionRate 
+    ? Number(settings.commissionRate) / 100 
+    : 0.20;
+
   for (const item of items) {
     const product = await Product.findById(item.productId);
     if (!product) {
@@ -250,7 +255,7 @@ export const createOrder = async (
     }
 
     const price = product.salePrice || product.price;
-    const platformFee = price * COMMISSION_RATE;
+    const platformFee = price * commissionRate; // ✅ DB se
     const vendorEarning = price - platformFee;
 
     subtotal += price;

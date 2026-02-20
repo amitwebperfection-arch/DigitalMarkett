@@ -281,9 +281,6 @@ const PaymentCard = ({ title, icon, enabled, onToggle, children }) => (
   </div>
 );
 
-// ══════════════════════════════════════════════════════════════
-// MAIN COMPONENT
-// ══════════════════════════════════════════════════════════════
 export default function AdminSettings() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('general');
@@ -727,7 +724,7 @@ export default function AdminSettings() {
       /* ────── APPEARANCE ────── */
       case 'appearance': return (
         <div className="space-y-4 sm:space-y-5">
-          <SectionCard title="Brand Colors">
+          {/* <SectionCard title="Brand Colors">
             <Field label="Primary Color">
               <div className="flex gap-2 sm:gap-3 items-center">
                 <input type="color" value={form.appearance.primaryColor}
@@ -746,13 +743,13 @@ export default function AdminSettings() {
                   onChange={e => setAppearance('secondaryColor', e.target.value)} />
               </div>
             </Field>
-          </SectionCard>
+          </SectionCard> */}
 
-          <FullWidthCard title="Theme">
+          {/* <FullWidthCard title="Theme">
             <Toggle label="Dark Mode Default" hint="All users see dark mode by default"
               name="darkModeEnabled" checked={form.appearance.darkModeEnabled}
               onChange={handleNested('appearance')} />
-          </FullWidthCard>
+          </FullWidthCard> */}
 
           <FullWidthCard title="Footer">
             <Field label="Footer Text">

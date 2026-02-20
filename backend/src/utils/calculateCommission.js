@@ -1,3 +1,4 @@
+console.log('=== calculateEarnings.js loaded ===');
 import Settings from '../modules/settings/model.js';
 import { COMMISSION_RATE as ENV_COMMISSION_RATE } from '../config/env.js';
 

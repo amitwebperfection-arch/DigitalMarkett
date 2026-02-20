@@ -29,6 +29,23 @@ export const requestPayout = async (vendorId, amount, method, accountDetails) =>
     status: 'pending'
   });
 
+  const { sendEmail: mailSend } = await import('../../config/mail.js');
+  const Settings = (await import('../settings/model.js')).default;
+  const settings = await Settings.findOne().lean();
+  const adminEmail = settings?.siteEmail;
+
+  if (adminEmail) {
+    mailSend({
+      to: adminEmail,
+      subject: `New Payout Request - $${amount}`,
+      html: `<h2>New Payout Request</h2>
+        <p>A vendor has requested a payout.</p>
+        <p><b>Amount:</b> $${amount}</p>
+        <p><b>Method:</b> ${method}</p>
+        <p>Please process it in the admin panel.</p>`
+    }).catch(console.error);
+  }
+
   return payout;
 };
 
@@ -84,41 +101,46 @@ export const processPayout = async (payoutId, adminId, status, notes = '') => {
   }
 
   if (status === 'completed') {
-  await Wallet.findOneAndUpdate(
-    { user: payout.vendor },
-    {
-      $inc: { lockedBalance: -payout.amount },
-      $push: {
-        transactions: {
-          type: 'debit',
-          amount: payout.amount,
-          description: 'Payout completed',
-          reference: payout._id.toString(),
-          createdAt: new Date()
+    await Wallet.findOneAndUpdate(
+      { user: payout.vendor },
+      {
+        $inc: { lockedBalance: -payout.amount },
+        $push: {
+          transactions: {
+            type: 'debit',
+            amount: payout.amount,
+            description: 'Payout completed',
+            reference: payout._id.toString(),
+            createdAt: new Date()
+          }
         }
       }
-    }
-  );
-}
+    );
+  }
 
-if (status === 'rejected') {
-  await Wallet.findOneAndUpdate(
-    { user: payout.vendor },
-    {
-      $inc: {
-        balance: payout.amount,
-        lockedBalance: -payout.amount
+  if (status === 'rejected') {
+    await Wallet.findOneAndUpdate(
+      { user: payout.vendor },
+      {
+        $inc: {
+          balance: payout.amount,
+          lockedBalance: -payout.amount
+        }
       }
-    }
-  );
-}
-
+    );
+  }
 
   payout.status = status;
   payout.processedAt = new Date();
   payout.processedBy = adminId;
   payout.notes = notes;
   await payout.save();
+
+  const vendor = await User.findById(payout.vendor).select('email');
+  if (vendor?.email) {
+    const { sendPayoutStatusEmail } = await import('../../services/email.service.js');
+    sendPayoutStatusEmail(vendor.email, payout.amount, status, notes).catch(console.error);
+  }
 
   return payout;
 };

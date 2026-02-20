@@ -70,6 +70,12 @@ export const handleStripeWebhook = async (signature, rawBody) => {
         await topup.save();
 
         await addFunds(topup.user, topup.amount, 'Wallet Topup');
+        const User = (await import('../users/model.js')).default;
+        const user = await User.findById(topup.user).select('email');
+        if (user?.email) {
+          const { sendWalletTopupEmail } = await import('../../services/email.service.js');
+          sendWalletTopupEmail(user.email, topup.amount, topup.currency).catch(console.error);
+        }
       }
     }
 

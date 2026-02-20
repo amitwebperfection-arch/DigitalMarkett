@@ -61,6 +61,23 @@ export const createProduct = async (productData, vendorId) => {
     }
   });
 
+  const { sendEmail: mailSend } = await import('../../config/mail.js');
+  const Settings = (await import('../settings/model.js')).default;
+  const settings = await Settings.findOne().lean();
+  const adminEmail = settings?.siteEmail;
+
+  if (adminEmail) {
+    mailSend({
+      to: adminEmail,
+      subject: `New Product Submitted - ${product.title}`,
+      html: `<h2>New Product Pending Review</h2>
+        <p>A vendor has submitted a new product for approval.</p>
+        <p><b>Product:</b> ${product.title}</p>
+        <p><b>Vendor ID:</b> ${vendorId}</p>
+        <p>Please review it in the admin panel.</p>`
+    }).catch(console.error);
+  }
+
   return product;
 };
 
@@ -229,21 +246,30 @@ export const deleteProduct = async (productId, vendorId) => {
 };
 
 export const approveProduct = async (productId) => {
-  return await Product.findByIdAndUpdate(
-    productId,
-    { status: 'approved' },
-    { new: true }
-  );
+  const product = await Product.findByIdAndUpdate(
+    productId, { status: 'approved' }, { new: true }
+  ).populate('vendor', 'email');
+
+  if (product?.vendor?.email) {
+    const { sendProductStatusEmail } = await import('../../services/email.service.js');
+    sendProductStatusEmail(product.vendor.email, product.title, 'approved').catch(console.error);
+  }
+
+  return product;
 };
 
 export const rejectProduct = async (productId) => {
-  return await Product.findByIdAndUpdate(
-    productId,
-    { status: 'rejected' },
-    { new: true }
-  );
-};
+  const product = await Product.findByIdAndUpdate(
+    productId, { status: 'rejected' }, { new: true }
+  ).populate('vendor', 'email');
 
+  if (product?.vendor?.email) {
+    const { sendProductStatusEmail } = await import('../../services/email.service.js');
+    sendProductStatusEmail(product.vendor.email, product.title, 'rejected').catch(console.error);
+  }
+
+  return product;
+};
 export const getVendorProductById = async (productId, vendorId) => {
   const product = await Product.findOne({
     _id: productId,

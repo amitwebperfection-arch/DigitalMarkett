@@ -14,13 +14,11 @@ export default function Coupons() {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-
-  // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [couponToDelete, setCouponToDelete] = useState(null);
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [showFormModal, setShowFormModal] = useState(false); // NEW: Form modal state
+  const [showFormModal, setShowFormModal] = useState(false); 
 
   const fetchCoupons = async (pageNum = 1) => {
     setLoading(true);
@@ -197,7 +195,11 @@ export default function Coupons() {
                     <th className="p-3 border text-sm font-semibold text-gray-600 text-left">Code</th>
                     <th className="p-3 border text-sm font-semibold text-gray-600 text-left">Type</th>
                     <th className="p-3 border text-sm font-semibold text-gray-600 text-left">Value</th>
+                    <th className="p-3 border text-sm font-semibold text-gray-600 text-left">Min Purchase</th>
+                    <th className="p-3 border text-sm font-semibold text-gray-600 text-left">Max Discount</th>
+                    <th className="p-3 border text-sm font-semibold text-gray-600 text-left">Usage Limit</th>
                     <th className="p-3 border text-sm font-semibold text-gray-600 text-left">Expires</th>
+                    <th className="p-3 border text-sm font-semibold text-gray-600 text-left">Status</th>
                     <th className="p-3 border text-sm font-semibold text-gray-600 text-left">Actions</th>
                   </tr>
                 </thead>

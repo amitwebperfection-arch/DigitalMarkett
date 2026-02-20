@@ -242,7 +242,7 @@ function UserWallet() {
       render: (row) => (
         <span className={`font-semibold ${row.type === 'credit' ? 'text-green-600' : 'text-red-600'}`}>
           {row.type === 'credit' ? '+' : '-'}
-          {row.currency === 'USD' ? '$' : '₹'}
+          {row.currency === 'USD' ? '$' : '$'}
           {row.amount}
         </span>
       ),
@@ -259,7 +259,7 @@ function UserWallet() {
   if (payConfig?.razorpay?.enabled) enabledProviders.push('razorpay');
   if (payConfig?.stripe?.enabled)   enabledProviders.push('stripe');
 
-  const currencySymbol  = selectedProvider === 'stripe' ? '$' : '₹';
+  const currencySymbol  = selectedProvider === 'stripe' ? '$' : '$';
   const quickAmounts    = selectedProvider === 'stripe'
     ? [5, 10, 25, 50]
     : [100, 250, 500, 1000];
@@ -277,7 +277,7 @@ function UserWallet() {
               <span className="text-sm opacity-90">Current Balance</span>
             </div>
             <div className="text-4xl font-bold">
-              ₹{data?.balance?.toFixed(2) || '0.00'}
+              ${data?.balance?.toFixed(2) || '0.00'}
             </div>
           </div>
           <button
@@ -353,7 +353,7 @@ function UserWallet() {
                         <p className="font-semibold text-sm">Razorpay</p>
                         <p className="text-xs text-gray-500">UPI · Cards · Net Banking · Wallets</p>
                       </div>
-                      <span className="text-xs font-bold text-blue-600">₹ INR</span>
+                      <span className="text-xs font-bold text-blue-600">$ INR</span>
                     </label>
                   )}
 

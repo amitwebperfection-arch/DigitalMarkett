@@ -1,10 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
 
-/**
- * DetailModal - Reusable modal component for showing detailed information
- * Used when user clicks on a mobile card
- */
 const DetailModal = ({ isOpen, onClose, title, children, actions }) => {
   if (!isOpen) return null;
 
@@ -46,9 +42,6 @@ const DetailModal = ({ isOpen, onClose, title, children, actions }) => {
   );
 };
 
-/**
- * DetailRow - Helper component for displaying key-value pairs in modal
- */
 export const DetailRow = ({ label, value, className = '' }) => {
   return (
     <div className={`${className}`}>

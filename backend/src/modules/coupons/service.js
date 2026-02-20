@@ -30,7 +30,7 @@ export const applyCoupon = async (code, cartTotal, productIds, userId) => {
   }
 
   if (coupon.rules?.minCartAmount && cartTotal < coupon.rules.minCartAmount) {
-    throw new Error(`Minimum cart value ₹${coupon.rules.minCartAmount}`);
+    throw new Error(`Minimum cart value $${coupon.rules.minCartAmount}`);
   }
 
   if (coupon.rules?.inactiveDays) {
@@ -110,6 +110,61 @@ export const createCoupon = async (couponData, adminId) => {
     code: couponData.code.toUpperCase(),
     createdBy: adminId
   });
+
+  const User = (await import('../users/model.js')).default;
+  const { sendEmail: mailSend } = await import('../../config/mail.js');
+
+  const users = await User.find({ 
+    isActive: true, 
+    isVerified: true,
+    role: 'user'
+  }).select('email name _id');
+
+  const discountText = coupon.type === 'percentage' 
+    ? `${coupon.value}% OFF` 
+    : `$${coupon.value} OFF`;
+  const expiryDate = new Date(coupon.expiresAt).toLocaleDateString('en-IN');
+
+  const eligibleUsers = [];
+
+  for (const user of users) {
+    const ordersCount = await Order.countDocuments({ user: user._id });
+
+    if (coupon.rules?.newUser && ordersCount > 0) continue;
+
+    if (coupon.rules?.minOrders && ordersCount < coupon.rules.minOrders) continue;
+
+    if (coupon.rules?.inactiveDays) {
+      const lastOrder = await Order.findOne({ user: user._id }).sort({ createdAt: -1 });
+      if (lastOrder) {
+        const days = (Date.now() - new Date(lastOrder.createdAt)) / (1000 * 60 * 60 * 24);
+        if (days < coupon.rules.inactiveDays) continue;
+      }
+    }
+    if (coupon.usedBy?.includes(user._id.toString())) continue;
+
+    eligibleUsers.push(user);
+  }
+  const batchSize = 50;
+  for (let i = 0; i < eligibleUsers.length; i += batchSize) {
+    const batch = eligibleUsers.slice(i, i + batchSize);
+    await Promise.allSettled(batch.map(user =>
+      mailSend({
+        to: user.email,
+        subject: `🎉 Special Coupon For You - ${coupon.code}`,
+        html: `
+          <h2>You have a special offer!</h2>
+          <p>Hi <b>${user.name}</b>,</p>
+          <div style="background:#eff6ff;border:2px solid #3b82f6;border-radius:8px;padding:20px;text-align:center;margin:20px 0;">
+            <h1 style="color:#3b82f6;letter-spacing:6px;margin:0;">${coupon.code}</h1>
+            <p style="margin:8px 0 0;font-size:18px;font-weight:bold;">${discountText}</p>
+          </div>
+          ${coupon.rules?.minCartAmount ? `<p>Minimum order: $${coupon.rules.minCartAmount}</p>` : ''}
+          <p><b>Expires:</b> ${expiryDate}</p>
+        `
+      })
+    ));
+  }
 
   return coupon;
 };

@@ -46,12 +46,12 @@ export default function UserCoupons({ onApply }) {
             <p className="mt-2 text-gray-700">
               {coupon.type === 'percentage'
                 ? `${coupon.value}% OFF`
-                : `₹${coupon.value} OFF`}
+                : `$${coupon.value} OFF`}
             </p>
 
             {coupon.minAmount && (
               <p className="text-sm text-gray-500">
-                Min order: ₹{coupon.minAmount}
+                Min order: ${coupon.minAmount}
               </p>
             )}
 

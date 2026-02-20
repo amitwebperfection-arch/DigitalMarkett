@@ -4,6 +4,7 @@ import Wallet from '../wallet/model.js';
 export const requestPayout = async (req, res, next) => {
   try {
     const user = req.user;
+    const { amount } = req.body; 
 
     if (!user.hasBankDetails) {
       return res.status(400).json({
@@ -25,9 +26,23 @@ export const requestPayout = async (req, res, next) => {
       });
     }
 
+    if (!amount || amount < minPayout) {
+      return res.status(400).json({
+        success: false,
+        message: `Minimum payout amount is $${minPayout}`
+      });
+    }
+
+    if (amount > wallet.balance) {
+      return res.status(400).json({
+        success: false,
+        message: 'Amount exceeds available balance'
+      });
+    }
+
     const payout = await payoutService.requestPayout(
       req.user.id,
-      wallet.balance,
+      amount,       
       user.bankDetails?.upiId ? 'upi' : 'bank_transfer',
       user.bankDetails
     );

@@ -440,7 +440,7 @@ export default function AdminSettings() {
             </Field>
           </SectionCard>
 
-          <SectionCard title="Currency">
+          {/* <SectionCard title="Currency">
             <Field label="Currency Code">
               <Select name="currency" value={form.currency} onChange={handleChange}>
                 {[['USD','USD — US Dollar'],['EUR','EUR — Euro'],['GBP','GBP — British Pound'],
@@ -463,7 +463,7 @@ export default function AdminSettings() {
               <Input type="number" name="maxCartItems" value={form.maxCartItems}
                 onChange={handleChange} min="1" />
             </Field>
-          </SectionCard>
+          </SectionCard> */}
 
           <FullWidthCard title="Tax">
             <Toggle label="Enable Tax" hint="Apply tax on all purchases"
@@ -476,14 +476,14 @@ export default function AdminSettings() {
             )}
           </FullWidthCard>
 
-          <FullWidthCard title="Checkout">
+          {/* <FullWidthCard title="Checkout">
             <div className="space-y-3">
               <Toggle label="Allow Guest Checkout" hint="Users can buy without an account"
                 name="allowGuestCheckout" checked={form.allowGuestCheckout} onChange={handleChange} />
               <Toggle label="Auto Payout" hint="Automatically process vendor payouts"
                 name="autoPayoutEnabled" checked={form.autoPayoutEnabled} onChange={handleChange} />
             </div>
-          </FullWidthCard>
+          </FullWidthCard> */}
         </div>
       );
 

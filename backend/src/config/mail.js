@@ -1,0 +1,91 @@
+import nodemailer from 'nodemailer';
+import Settings from '../modules/settings/model.js'; 
+import { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, FROM_EMAIL, FROM_NAME } from './env.js';
+
+
+const getSmtpConfig = async () => {
+  try {
+    const settings = await Settings.findOne().lean();
+    const smtp = settings?.smtp;
+
+    return {
+      host:      smtp?.host      || SMTP_HOST,
+      port:      smtp?.port      || SMTP_PORT      || 587,
+      user:      smtp?.user      || SMTP_USER,
+      pass:      smtp?.pass      || SMTP_PASS,
+      fromEmail: smtp?.fromEmail || FROM_EMAIL,
+      fromName:  smtp?.fromName  || FROM_NAME      || 'Digital Marketplace',
+      footerText: smtp?.emailFooterText || '',
+    };
+  } catch {
+    return {
+      host:      SMTP_HOST,
+      port:      SMTP_PORT || 587,
+      user:      SMTP_USER,
+      pass:      SMTP_PASS,
+      fromEmail: FROM_EMAIL,
+      fromName:  FROM_NAME || 'Digital Marketplace',
+      footerText: '',
+    };
+  }
+};
+
+export const isNotificationEnabled = async (type) => {
+  try {
+    const settings = await Settings.findOne().lean();
+    const notifs = settings?.emailNotifications;
+    if (!notifs) return true; 
+
+    const map = {
+      orderConfirmation:  notifs.orderConfirmation,
+      vendorNotification: notifs.vendorNotification,
+      payoutNotification: notifs.payoutNotification,
+      welcomeEmail:       notifs.welcomeEmail,
+    };
+    return map[type] !== false;
+  } catch {
+    return true;
+  }
+};
+
+export const sendEmail = async ({ to, subject, html, text, type = null }) => {
+  if (type) {
+    const enabled = await isNotificationEnabled(type);
+    if (!enabled) {
+      console.log(`📧 Email skipped — ${type} notifications are OFF in settings`);
+      return;
+    }
+  }
+
+  const config = await getSmtpConfig();
+
+  const transporter = nodemailer.createTransport({
+    host:   config.host,
+    port:   Number(config.port),
+    secure: Number(config.port) === 465, 
+    auth: {
+      user: config.user,
+      pass: config.pass,
+    },
+  });
+
+ 
+  const footerHtml = config.footerText
+    ? `<div style="margin-top:24px;padding-top:16px;border-top:1px solid #e5e7eb;font-size:12px;color:#9ca3af;">${config.footerText}</div>`
+    : '';
+
+  const finalHtml = html ? `${html}${footerHtml}` : undefined;
+
+  const mailOptions = {
+    from:    `${config.fromName} <${config.fromEmail}>`,
+    to,
+    subject,
+    text,
+    html: finalHtml,
+  };
+
+  await transporter.sendMail(mailOptions);
+  console.log(`📧 Email sent to ${to} — subject: "${subject}"`);
+};
+
+export default { sendEmail, isNotificationEnabled };

@@ -8,13 +8,12 @@ const HeroSection = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Fetch categories from API
   const { data: categoriesData } = useQuery({
     queryKey: ['hero-categories'],
     queryFn: categoryService.getCategories,
   });
 
-  // Get published categories and limit to first 6
+  
   const categories = categoriesData?.categories?.filter(cat => cat.published)?.slice(0, 6) || [];
 
   // Detect mobile screen

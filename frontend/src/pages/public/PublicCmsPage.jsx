@@ -2,6 +2,7 @@ import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { cmsService } from '../../services/cms.service';
 import LoadingSpinner from '../../components/common/LoadingSpinner'; 
+import NotFound from '../errors/NotFound';
 
 function PublicCmsPage() {
   const { slug } = useParams();
@@ -12,7 +13,7 @@ function PublicCmsPage() {
   });
 
   if (isLoading) return <LoadingSpinner fullScreen />; 
-  if (!data?.data?.page) return <div>Page not found</div>;
+  if (!data?.data?.page) return <NotFound />;
 
   return (
     <div className="container py-10">

@@ -25,7 +25,7 @@ export const getUnreadCount = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-};
+}; ss
 
 // PUT /api/notifications/:id/read
 export const markAsRead = async (req, res, next) => {

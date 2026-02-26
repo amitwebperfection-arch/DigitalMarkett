@@ -1,9 +1,15 @@
 import * as ticketService from './service.js';
+import { onNewTicket, onTicketReply } from '../notification/triggers.js';
 
 export const createTicket = async (req, res, next) => {
   try {
     const { subject, category, message } = req.body;
     const ticket = await ticketService.createTicket(req.user.id, subject, category, message);
+    const userName = req.user.name || 'User';
+    onNewTicket(ticket, userName).catch(err =>
+      console.error('Notification error (new ticket):', err)
+    );
+
     res.status(201).json({ success: true, ticket });
   } catch (error) {
     next(error);
@@ -33,6 +39,13 @@ export const replyToTicket = async (req, res, next) => {
   try {
     const { message } = req.body;
     const ticket = await ticketService.addMessage(req.params.id, req.user.id, message);
+
+    if (req.user.role === 'admin') {
+      onTicketReply(ticket).catch(err =>
+        console.error('Notification error (ticket reply):', err)
+      );
+    }
+
     res.json({ success: true, ticket });
   } catch (error) {
     next(error);

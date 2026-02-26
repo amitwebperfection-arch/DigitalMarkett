@@ -4,6 +4,7 @@ import Product from '../products/model.js';
 import Wallet from '../wallet/model.js';
 import { sendEmail } from '../../config/mail.js';
 import Settings from '../settings/model.js';
+import { onNewOrder, onOrderCompleted } from '../notification/triggers.js';
 
 const generateLicenseKey = () => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -332,7 +333,7 @@ export const createOrder = async (
 
   const userName = `${personalDetails.firstName} ${personalDetails.lastName}`;
   const userEmail = personalDetails.email;
-
+  await onNewOrder(order, userName);
   return order;
 };
 
@@ -404,6 +405,7 @@ export const completeOrder = async (orderId, paymentId) => {
     }
 
     await session.commitTransaction();
+    await onOrderCompleted(order);
     session.endSession();
 
     if (order.coupon) {
@@ -444,10 +446,43 @@ export const getUserOrders = async (userId, page = 1, limit = 10) => {
   return { orders, total, page, pages: Math.ceil(total / limit) };
 };
 
+
 export const getAdminOrders = async (page = 1, limit = 10, filters = {}) => {
   const query = {};
+
   if (filters.status) query.status = filters.status;
   if (filters.paymentStatus) query.paymentStatus = filters.paymentStatus;
+
+  if (filters.dateFrom || filters.dateTo) {
+    query.createdAt = {};
+    if (filters.dateFrom) query.createdAt.$gte = new Date(filters.dateFrom);
+    if (filters.dateTo) {
+      const end = new Date(filters.dateTo);
+      end.setHours(23, 59, 59, 999); 
+      query.createdAt.$lte = end;
+    }
+  }
+
+  if (filters.search) {
+    const User = (await import('../users/model.js')).default;
+    const users = await User.find({
+      $or: [
+        { name:  { $regex: filters.search, $options: 'i' } },
+        { email: { $regex: filters.search, $options: 'i' } },
+      ]
+    }).select('_id');
+
+    const userIds = users.map(u => u._id);
+
+    query.$or = [
+      { user: { $in: userIds } },
+      { 'personalDetails.firstName': { $regex: filters.search, $options: 'i' } },
+      { 'personalDetails.lastName':  { $regex: filters.search, $options: 'i' } },
+      { 'personalDetails.email':     { $regex: filters.search, $options: 'i' } },
+    ];
+  }
+
+  const total = await Order.countDocuments(query);
 
   const orders = await Order.find(query)
     .populate('user', 'name email')
@@ -456,9 +491,12 @@ export const getAdminOrders = async (page = 1, limit = 10, filters = {}) => {
     .skip((page - 1) * limit)
     .limit(limit);
 
-  const total = await Order.countDocuments(query);
-
-  return { orders, total, page, pages: Math.ceil(total / limit) };
+  return {
+    orders,
+    total,
+    page,
+    pages: Math.ceil(total / limit), 
+  };
 };
 
 export const getVendorOrders = async (vendorId, page = 1, limit = 10) => {

@@ -1,6 +1,7 @@
 import * as productService from './service.js';
 import { uploadToCloudinary } from '../../config/s3.js';
 import Product from './model.js';
+import { onProductApproved, onProductRejected } from '../notification/triggers.js';
 
 export const createProduct = async (req, res, next) => {
   try {
@@ -167,6 +168,9 @@ export const deleteProduct = async (req, res, next) => {
 export const approveProduct = async (req, res, next) => {
   try {
     const product = await productService.approveProduct(req.params.id);
+    onProductApproved(product).catch(err =>
+      console.error('Notification error (approve):', err)
+    );
     res.json({ success: true, product });
   } catch (error) {
     next(error);
@@ -176,6 +180,9 @@ export const approveProduct = async (req, res, next) => {
 export const rejectProduct = async (req, res, next) => {
   try {
     const product = await productService.rejectProduct(req.params.id);
+    onProductRejected(product).catch(err =>
+      console.error('Notification error (reject):', err)
+    );
     res.json({ success: true, product });
   } catch (error) {
     next(error);

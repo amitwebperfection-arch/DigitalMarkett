@@ -26,6 +26,7 @@ import wishlistRoutes from './modules/wishlist/routes.js';
 import categoryRoutes from './modules/categories/category.routes.js';
 import contactRoutes from './modules/contact/contactRoutes.js';
 import systemRoutes  from './modules/SystemInfo/routes.js';
+import notificationRoutes from './modules/notification/routes.js';
 
 const app = express();
 
@@ -73,6 +74,7 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/system', systemRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 
 

@@ -6,7 +6,7 @@ import {
 export const onNewOrder = async (order, userName) => {
   await notifyAllAdmins({
     title: 'New Order Received',
-    message: `${userName} ne ek naya order place kiya. Total: $${order.total?.toFixed(2)}`,
+    message: `${userName} placed a new order. Total: $${order.total?.toFixed(2)}`,
     type: 'new_order',
     link: '/admin/orders',
     refModel: 'Order',
@@ -14,13 +14,12 @@ export const onNewOrder = async (order, userName) => {
   });
 };
 
-
 export const onOrderCompleted = async (order) => {
   await createNotification({
     recipientId: order.user,
     recipientRole: 'user',
     title: 'Order Completed!',
-    message: `Aapka order #${order._id.toString().slice(-8).toUpperCase()} successfully complete ho gaya.`,
+    message: `Your order #${order._id.toString().slice(-8).toUpperCase()} has been successfully completed.`,
     type: 'order_completed',
     link: '/user/orders',
     refModel: 'Order',
@@ -28,13 +27,12 @@ export const onOrderCompleted = async (order) => {
   });
 };
 
-
 export const onProductApproved = async (product) => {
   await createNotification({
     recipientId: product.vendor,
     recipientRole: 'vendor',
     title: 'Product Approved ✅',
-    message: `Aapka product "${product.title}" approve ho gaya aur ab live hai.`,
+    message: `Your product "${product.title}" has been approved and is now live.`,
     type: 'product_approved',
     link: '/vendor/products',
     refModel: 'Product',
@@ -47,7 +45,7 @@ export const onProductRejected = async (product) => {
     recipientId: product.vendor,
     recipientRole: 'vendor',
     title: 'Product Rejected ❌',
-    message: `Aapka product "${product.title}" reject ho gaya. Please review karo.`,
+    message: `Your product "${product.title}" has been rejected. Please review and update it.`,
     type: 'product_rejected',
     link: '/vendor/products',
     refModel: 'Product',
@@ -58,7 +56,7 @@ export const onProductRejected = async (product) => {
 export const onVendorApply = async (vendor) => {
   await notifyAllAdmins({
     title: 'New Vendor Application',
-    message: `${vendor.name} ne vendor ke liye apply kiya hai. Review karo.`,
+    message: `${vendor.name} has applied to become a vendor. Please review the application.`,
     type: 'new_vendor_apply',
     link: '/admin/vendors',
     refModel: null,
@@ -71,7 +69,7 @@ export const onPayoutProcessed = async (payout) => {
     recipientId: payout.vendor,
     recipientRole: 'vendor',
     title: 'Payout Processed ✅',
-    message: `Aapka $${payout.amount?.toFixed(2)} ka payout successfully process ho gaya.`,
+    message: `Your payout of $${payout.amount?.toFixed(2)} has been successfully processed.`,
     type: 'payout_processed',
     link: '/vendor/payouts',
     refModel: 'Payout',
@@ -84,7 +82,7 @@ export const onPayoutRejected = async (payout) => {
     recipientId: payout.vendor,
     recipientRole: 'vendor',
     title: 'Payout Rejected',
-    message: `Aapka $${payout.amount?.toFixed(2)} ka payout reject ho gaya.`,
+    message: `Your payout of $${payout.amount?.toFixed(2)} has been rejected.`,
     type: 'payout_rejected',
     link: '/vendor/payouts',
     refModel: 'Payout',
@@ -95,7 +93,7 @@ export const onPayoutRejected = async (payout) => {
 export const onNewTicket = async (ticket, userName) => {
   await notifyAllAdmins({
     title: 'New Support Ticket',
-    message: `${userName} ne ek naya ticket create kiya: "${ticket.subject}"`,
+    message: `${userName} created a new support ticket: "${ticket.subject}"`,
     type: 'new_ticket',
     link: `/admin/tickets/${ticket._id}`,
     refModel: 'Ticket',
@@ -108,8 +106,8 @@ export const onTicketReply = async (ticket) => {
   await createNotification({
     recipientId: ticket.user._id || ticket.user,
     recipientRole: isVendor ? 'vendor' : 'user',
-    title: 'Ticket Reply Received',
-    message: `Aapke ticket "${ticket.subject}" pe ek naya reply aaya hai.`,
+    title: 'New Ticket Reply',
+    message: `You have received a new reply on your ticket "${ticket.subject}".`,
     type: isVendor ? 'ticket_reply' : 'ticket_reply_user',
     link: isVendor
       ? `/vendor/tickets/${ticket._id}`

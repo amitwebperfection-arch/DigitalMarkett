@@ -63,7 +63,6 @@ const [editorMode, setEditorMode] = useState('visual');
 
       <form onSubmit={handleSubmit} className="grid grid-cols-3 gap-6">
 
-        {/* ── Left/Main Column ── */}
         <div className="col-span-2 space-y-4">
 
           {/* Title */}

@@ -8,7 +8,6 @@ import DetailModal, { DetailRow } from '../../components/common/DetailModal';
 import { format } from 'date-fns';
 import { Package, DollarSign, User, Search, Filter, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
-// ─── Pagination ───────────────────────────────────────────────────────────────
 function Pagination({ currentPage, totalPages, onPageChange }) {
   if (!totalPages || totalPages <= 1) return null;
 
@@ -68,7 +67,6 @@ function Pagination({ currentPage, totalPages, onPageChange }) {
   );
 }
 
-// ─── Filter Tag ───────────────────────────────────────────────────────────────
 function FilterTag({ label, onRemove }) {
   return (
     <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full border border-blue-200">
@@ -78,7 +76,6 @@ function FilterTag({ label, onRemove }) {
   );
 }
 
-// ─── Empty State ──────────────────────────────────────────────────────────────
 function EmptyState({ hasFilters, onClear }) {
   return (
     <div className="p-12 text-center">
@@ -95,7 +92,6 @@ function EmptyState({ hasFilters, onClear }) {
   );
 }
 
-// ─── Badge helpers ────────────────────────────────────────────────────────────
 const statusClass = (s) =>
   ({ completed: 'bg-green-100 text-green-800', processing: 'bg-blue-100 text-blue-800',
      pending: 'bg-yellow-100 text-yellow-800', cancelled: 'bg-red-100 text-red-800' }[s] ||
@@ -105,7 +101,6 @@ const paymentClass = (s) =>
   ({ completed: 'bg-green-100 text-green-800', pending: 'bg-yellow-100 text-yellow-800',
      failed: 'bg-red-100 text-red-800' }[s] || 'bg-gray-100 text-gray-800');
 
-// ─── AdminOrders ──────────────────────────────────────────────────────────────
 function AdminOrders() {
   const [page, setPage]                   = useState(1);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -143,7 +138,6 @@ function AdminOrders() {
     setPage(1);
   };
 
-  // ── Query — params match exactly what backend expects ──────────────────────
   const { data, isLoading, isFetching } = useQuery({
     queryKey: ['admin-orders', page, searchQuery, statusFilter, paymentFilter, dateFrom, dateTo],
     queryFn: () =>
@@ -159,8 +153,6 @@ function AdminOrders() {
     keepPreviousData: true,
   });
 
-  // Backend returns: { orders, total, page, pages }
-  // ✅ Use data.pages (not data.totalPages)
   const totalPages = data?.pages || 1;
 
   const columns = [

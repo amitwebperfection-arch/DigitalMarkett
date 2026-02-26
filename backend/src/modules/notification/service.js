@@ -1,4 +1,3 @@
-
 import Notification from './model.js';
 import User from '../users/model.js';
 
@@ -29,9 +28,6 @@ export const createNotification = async ({
   }
 };
 
-/**
- * Saare admins ko notification bhejo
- */
 export const notifyAllAdmins = async ({ title, message, type, link, refModel, refId }) => {
   try {
     const admins = await User.find({ role: 'admin' }).select('_id');
@@ -51,9 +47,6 @@ export const notifyAllAdmins = async ({ title, message, type, link, refModel, re
   }
 };
 
-/**
- * User ki notifications fetch karo
- */
 export const getUserNotifications = async (userId, page = 1, limit = 15) => {
   const notifications = await Notification.find({ recipient: userId })
     .sort({ createdAt: -1 })
@@ -70,9 +63,6 @@ export const getUserNotifications = async (userId, page = 1, limit = 15) => {
   return { notifications, unreadCount, total, pages: Math.ceil(total / limit) };
 };
 
-/**
- * Ek notification mark as read
- */
 export const markAsRead = async (notificationId, userId) => {
   return Notification.findOneAndUpdate(
     { _id: notificationId, recipient: userId },
@@ -81,9 +71,6 @@ export const markAsRead = async (notificationId, userId) => {
   );
 };
 
-/**
- * Saari notifications mark as read
- */
 export const markAllAsRead = async (userId) => {
   return Notification.updateMany(
     { recipient: userId, isRead: false },
@@ -91,9 +78,7 @@ export const markAllAsRead = async (userId) => {
   );
 };
 
-/**
- * Sirf unread count
- */
+
 export const getUnreadCount = async (userId) => {
   return Notification.countDocuments({ recipient: userId, isRead: false });
 };

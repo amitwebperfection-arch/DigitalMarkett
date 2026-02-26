@@ -115,4 +115,4 @@ export const onTicketReply = async (ticket) => {
     refModel: 'Ticket',
     refId: ticket._id,
   });
-};.
+};

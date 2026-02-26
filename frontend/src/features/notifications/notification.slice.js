@@ -1,9 +1,7 @@
-// frontend/src/features/notifications/notification.slice.js
-
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { notificationService } from '../../services/notificationService';
+import api from "../../services/api";
 
-// ── Async Thunks ──────────────────────────────────────────────────────────────
 
 export const fetchUnreadCount = createAsyncThunk(
   'notifications/fetchUnreadCount',
@@ -51,8 +49,6 @@ export const markAllRead = createAsyncThunk(
   }
 );
 
-// ── Slice ─────────────────────────────────────────────────────────────────────
-
 const notificationSlice = createSlice({
   name: 'notifications',
   initialState: {
@@ -71,19 +67,16 @@ const notificationSlice = createSlice({
     closeDropdown: (state) => {
       state.dropdownOpen = false;
     },
-    // Optimistic unread count increment (jab naya notification aaye)
     incrementUnread: (state) => {
       state.unreadCount += 1;
     },
   },
   extraReducers: (builder) => {
     builder
-      // Unread count
       .addCase(fetchUnreadCount.fulfilled, (state, action) => {
         state.unreadCount = action.payload;
       })
 
-      // Fetch all
       .addCase(fetchNotifications.pending, (state) => {
         state.loading = true;
       })
@@ -98,7 +91,6 @@ const notificationSlice = createSlice({
         state.loading = false;
       })
 
-      // Mark one read
       .addCase(markOneRead.fulfilled, (state, action) => {
         const n = state.items.find((i) => i._id === action.payload);
         if (n && !n.isRead) {
@@ -107,7 +99,6 @@ const notificationSlice = createSlice({
         }
       })
 
-      // Mark all read
       .addCase(markAllRead.fulfilled, (state) => {
         state.items.forEach((n) => (n.isRead = true));
         state.unreadCount = 0;

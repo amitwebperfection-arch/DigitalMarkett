@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { setUser } from './features/auth/auth.slice';
 import AppRoutes from './routes';
 import MaintenanceGuard from './components/common/MaintenanceGuard'; 
+import ErrorBoundary from '../src/pages/errors/ErrorBoundary';
 
 function App() {
   const dispatch = useDispatch();
@@ -24,10 +25,11 @@ function App() {
   }, [dispatch]);
 
   return(
-
+ <ErrorBoundary>  
     <MaintenanceGuard>
       <AppRoutes />
     </MaintenanceGuard>
+    </ErrorBoundary>
   )
 
    

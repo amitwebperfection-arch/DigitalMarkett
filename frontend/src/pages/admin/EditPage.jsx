@@ -18,7 +18,7 @@ function EditPage() {
   });
 
   const [editorMode, setEditorMode] = useState('visual');
-  const [pageLoaded, setPageLoaded] = useState(false); // ✅ ReactQuill key fix ke liye
+  const [pageLoaded, setPageLoaded] = useState(false); 
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -37,7 +37,7 @@ function EditPage() {
             metaDescription: page.seo?.metaDescription || '',
           }
         });
-        setPageLoaded(true); // ✅ Data aane ke baad ReactQuill mount hoga
+        setPageLoaded(true); 
       } catch (err) {
         console.error('Fetch error:', err.response?.data);
       }
@@ -51,7 +51,6 @@ function EditPage() {
     setForm({ ...form, seo: { ...form.seo, [e.target.name]: e.target.value } });
   };
 
-  // ✅ Fix: Title input pe yahi function use hona chahiye tha
   const handleTitleChange = (e) => {
     const title = e.target.value;
     const slug = title
@@ -89,7 +88,6 @@ function EditPage() {
     ],
   };
 
-  // ✅ Jab tak data load na ho, spinner dikhao
   if (!pageLoaded) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -159,7 +157,6 @@ function EditPage() {
               </button>
             </div>
 
-            {/* ✅ Key prop se ReactQuill fresh mount hoga — content blank nahi aayega */}
             {editorMode === 'visual' && (
               <ReactQuill
                 key="quill-editor"

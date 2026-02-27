@@ -110,11 +110,9 @@ const productSchema = new mongoose.Schema({
   supportedUntil: Date
 }, {
   timestamps: true,
-  // ✅ IMPORTANT: Ensure rating is included in JSON output
   toJSON: { 
     virtuals: true,
     transform: function(doc, ret) {
-      // Ensure rating exists
       if (!ret.rating) {
         ret.rating = { average: 0, count: 0 };
       }
@@ -124,7 +122,6 @@ const productSchema = new mongoose.Schema({
   toObject: { 
     virtuals: true,
     transform: function(doc, ret) {
-      // Ensure rating exists
       if (!ret.rating) {
         ret.rating = { average: 0, count: 0 };
       }
@@ -133,9 +130,7 @@ const productSchema = new mongoose.Schema({
   }
 });
 
-// ✅ Add default value middleware
 productSchema.pre('save', function(next) {
-  // Ensure rating exists before saving
   if (!this.rating) {
     this.rating = { average: 0, count: 0 };
   }

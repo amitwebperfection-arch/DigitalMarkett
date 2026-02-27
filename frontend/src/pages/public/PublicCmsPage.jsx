@@ -19,7 +19,6 @@ function PublicCmsPage() {
 
   return (
     <>
-      {/* Scoped CSS for WordPress-style HTML rendering */}
       <style>{`
         .cms-content h1 { font-size: 2rem; font-weight: 700; margin: 1.75rem 0 1rem; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; line-height: 1.25; }
         .cms-content h2 { font-size: 1.6rem; font-weight: 700; margin: 1.5rem 0 0.75rem; color: #0f172a; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.4rem; line-height: 1.3; }

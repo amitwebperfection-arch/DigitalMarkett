@@ -7,7 +7,6 @@ import {
   RAZORPAY_KEY_SECRET,
 } from './env.js';
 
-// ─── DB se payment config lo, fallback .env ───────────────────
 const getPaymentConfig = async () => {
   try {
     const settings = await Settings.findOne().lean();
@@ -28,7 +27,7 @@ const getPaymentConfig = async () => {
       cod:    { enabled: pm?.cod?.enabled    ?? false },
     };
   } catch {
-    // DB fail to .env fallback
+    
     return {
       stripe:   { enabled: !!STRIPE_SECRET_KEY,    secretKey: STRIPE_SECRET_KEY, publicKey: '' },
       razorpay: { enabled: !!RAZORPAY_KEY_ID,       keyId: RAZORPAY_KEY_ID, keySecret: RAZORPAY_KEY_SECRET },
@@ -38,13 +37,11 @@ const getPaymentConfig = async () => {
   }
 };
 
-// ─── Dynamic Stripe instance ───────────────────────────────────
 export const stripe = new Stripe(STRIPE_SECRET_KEY, {
   apiVersion: '2025-10-29.clover'
 });
 
 
-// ─── Dynamic Razorpay instance ─────────────────────────────────
 export const razorpay = async () => {
   const config = await getPaymentConfig();
 

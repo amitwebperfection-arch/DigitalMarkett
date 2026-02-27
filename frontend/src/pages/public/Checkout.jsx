@@ -209,7 +209,13 @@ function Checkout() {
       dispatch(clearCart());
       navigate('/user/orders');
     } catch (error) {
-      toast.error(error.message || 'Payment failed');
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        'Payment failed';
+
+      toast.error(message);
+
     } finally {
       setIsProcessing(false);
     }

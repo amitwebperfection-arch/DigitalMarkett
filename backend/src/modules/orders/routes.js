@@ -6,10 +6,11 @@ const router = express.Router();
 
 router.use(protect);
 
-router.post('/create', orderController.createOrder);
-router.get('/my', orderController.getMyOrders);
+router.post('/create', restrictTo('user'), orderController.createOrder);
 
-router.get('/vendor', orderController.getVendorOrders);
+router.get('/my', restrictTo('user'), orderController.getMyOrders);
+
+router.get('/vendor', restrictTo('vendor'), orderController.getVendorOrders);
 
 router.get('/admin', restrictTo('admin'), orderController.getAdminOrders);
 

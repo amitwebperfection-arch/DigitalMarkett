@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { notificationService } from '../../services/notificationService';
-import api from "../../services/api";
 
 
 export const fetchUnreadCount = createAsyncThunk(
